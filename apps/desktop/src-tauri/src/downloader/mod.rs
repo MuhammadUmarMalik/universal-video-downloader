@@ -4,6 +4,7 @@
 //! implemented behind this Rust boundary. IPC, resume validators, and scheduler integration
 //! remain deferred to their dedicated phases.
 
+mod bandwidth;
 mod cancellation;
 mod finalization;
 pub(crate) mod path_safety;
@@ -16,6 +17,7 @@ mod storage;
 mod streaming;
 mod worker;
 
+pub use bandwidth::{BandwidthLimiter, BandwidthSnapshot};
 pub use cancellation::{CancellationRegistry, CancellationToken};
 pub use finalization::{finalize_part, FinalizationError, FinalizationResult};
 pub use path_safety::{validate_destination, DestinationPathError, DestinationPaths};

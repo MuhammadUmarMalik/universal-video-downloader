@@ -1,6 +1,7 @@
 import type {
   AnalyzeRequest,
   AnalyzeResponse,
+  BandwidthStatus,
   CreateDownloadRequest,
   DownloadJob,
   FoundationStatus,
@@ -20,6 +21,14 @@ export async function analyzeUrl(request: AnalyzeRequest): Promise<AnalyzeRespon
 
 export async function createDownload(request: CreateDownloadRequest): Promise<DownloadJob> {
   return invoke<DownloadJob>("create_download", { request });
+}
+
+export async function getBandwidthStatus(): Promise<BandwidthStatus> {
+  return invoke<BandwidthStatus>("get_bandwidth_status");
+}
+
+export async function setBandwidthLimit(limitKbps: number): Promise<BandwidthStatus> {
+  return invoke<BandwidthStatus>("set_bandwidth_limit", { limitKbps });
 }
 
 export async function cancelDownload(jobId: string): Promise<boolean> {

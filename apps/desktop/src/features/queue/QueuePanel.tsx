@@ -2,6 +2,8 @@ import { useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { cancelDownload, getDownloadJobs, subscribeDownloadProgress } from "@/lib/tauri";
+import { BatchDirectImport } from "./BatchDirectImport";
+import { BandwidthPanel } from "./BandwidthPanel";
 import {
   formatBytes,
   formatEta,
@@ -107,6 +109,7 @@ export function QueuePanel() {
     refetchInterval: 5_000,
   });
   const jobs = useQueueStore((state) => state.jobs);
+  const bandwidth = useQueueStore((state) => state.bandwidth);
   const setJobs = useQueueStore((state) => state.setJobs);
   const applyProgress = useQueueStore((state) => state.applyProgress);
   const selectedIds = useQueueStore((state) => state.selectedIds);
@@ -166,6 +169,11 @@ export function QueuePanel() {
         <div className="rounded-xl border border-border bg-card p-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Total jobs</p><p className="mt-2 text-2xl font-semibold">{jobs.length}</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Active</p><p className="mt-2 text-2xl font-semibold">{activeCount}</p></div>
         <div className="rounded-xl border border-violet-200 bg-violet-50 p-4"><p className="text-xs uppercase tracking-wide text-violet-700">FFmpeg processing</p><p className="mt-2 text-2xl font-semibold text-violet-900">{processingCount}</p></div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <BandwidthPanel snapshot={bandwidth} />
+        <BatchDirectImport onImported={refresh} />
       </div>
 
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">

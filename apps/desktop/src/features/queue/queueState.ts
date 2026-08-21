@@ -1,11 +1,17 @@
 import { create } from "zustand";
-import type { DownloadJob, DownloadStatus, LiveProgressEvent } from "@umd/shared-types";
+import type {
+  BandwidthSnapshot,
+  DownloadJob,
+  DownloadStatus,
+  LiveProgressEvent,
+} from "@umd/shared-types";
 
 export type QueueFilter = "all" | "active" | "processing" | "completed" | "failed";
 export type QueueSort = "priority" | "created_desc" | "status";
 
 interface QueueState {
   jobs: DownloadJob[];
+  bandwidth: BandwidthSnapshot;
   selectedIds: string[];
   filter: QueueFilter;
   sort: QueueSort;
@@ -20,6 +26,11 @@ interface QueueState {
 
 export const useQueueStore = create<QueueState>((set) => ({
   jobs: [],
+  bandwidth: {
+    limit_bytes_per_sec: null,
+    current_bytes_per_sec: 0,
+    total_bytes: 0,
+  },
   selectedIds: [],
   filter: "all",
   sort: "priority",
@@ -30,6 +41,7 @@ export const useQueueStore = create<QueueState>((set) => ({
     })),
   applyProgress: (event) =>
     set((state) => ({
+      bandwidth: event.bandwidth ?? state.bandwidth,
       jobs: state.jobs.map((job) =>
         job.id === event.job_id
           ? {

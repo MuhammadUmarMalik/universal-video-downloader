@@ -77,12 +77,25 @@ export interface HistoryEntry {
   finished_at: string;
 }
 
+export interface BandwidthSnapshot {
+  limit_bytes_per_sec: number | null;
+  current_bytes_per_sec: number;
+  total_bytes: number;
+}
+
+export interface BandwidthStatus {
+  limit_kbps: number | null;
+  current_kbps: number;
+  total_bytes: number;
+}
+
 export interface LiveProgressEvent {
   job_id: string;
   downloaded_bytes: number;
   total_bytes: number | null;
   speed_bytes_per_sec: number | null;
   eta_seconds: number | null;
+  bandwidth?: BandwidthSnapshot;
 }
 
 export type ScheduleType = "once" | "daily" | "weekly" | "interval";

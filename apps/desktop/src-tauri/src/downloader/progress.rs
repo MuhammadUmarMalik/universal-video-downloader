@@ -1,3 +1,4 @@
+use super::BandwidthSnapshot;
 use serde::Serialize;
 use std::time::{Duration, Instant};
 use tokio::sync::broadcast;
@@ -27,6 +28,7 @@ pub struct LiveProgressEvent {
     pub total_bytes: Option<u64>,
     pub speed_bytes_per_sec: Option<u64>,
     pub eta_seconds: Option<u64>,
+    pub bandwidth: BandwidthSnapshot,
 }
 
 #[derive(Clone)]
@@ -133,6 +135,7 @@ impl ProgressSampler {
 #[cfg(test)]
 mod tests {
     use super::{ProgressBroadcaster, ProgressSampler};
+    use crate::downloader::BandwidthSnapshot;
     use std::time::{Duration, Instant};
 
     #[test]
@@ -172,6 +175,11 @@ mod tests {
             total_bytes: Some(10),
             speed_bytes_per_sec: Some(5),
             eta_seconds: Some(1),
+            bandwidth: BandwidthSnapshot {
+                limit_bytes_per_sec: None,
+                current_bytes_per_sec: 5,
+                total_bytes: 5,
+            },
         });
         let event = receiver.recv().await.expect("event should be delivered");
         assert_eq!(event.job_id, "job-1");

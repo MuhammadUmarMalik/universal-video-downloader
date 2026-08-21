@@ -11,7 +11,8 @@ mod security;
 
 use commands::analyzer::analyze_url;
 use commands::downloader::{
-    cancel_download, create_download, get_download_jobs, subscribe_download_progress,
+    cancel_download, create_download, get_bandwidth_status, get_download_jobs, set_bandwidth_limit,
+    subscribe_download_progress,
 };
 use commands::foundation::get_foundation_status;
 use commands::history::{clear_history, delete_history_entry, get_history};
@@ -34,6 +35,8 @@ pub fn run() {
             get_foundation_status,
             analyze_url,
             create_download,
+            get_bandwidth_status,
+            set_bandwidth_limit,
             cancel_download,
             get_download_jobs,
             subscribe_download_progress,

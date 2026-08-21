@@ -1,26 +1,18 @@
-import type { AnalyzeResponse, AppError } from "@umd/shared-types";
+import { normalizeAppError, type AnalyzeResponse, type AppError } from "@umd/shared-types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { analyzeUrl } from "@/lib/tauri";
 import { AnalysisResults } from "./AnalysisResults";
 
 function toAppError(error: unknown): AppError {
-  if (typeof error === "object" && error !== null) {
-    const candidate = error as Partial<AppError>;
-    if (
-      typeof candidate.code === "string" &&
-      typeof candidate.message === "string" &&
-      typeof candidate.retryable === "boolean"
-    ) {
-      return candidate as AppError;
+  return (
+    normalizeAppError(error) ?? {
+      code: "UNKNOWN_ERROR",
+      message: "The analysis could not be completed.",
+      retryable: true,
+      userAction: "Check the URL and try again.",
     }
-  }
-  return {
-    code: "UNKNOWN_ERROR",
-    message: "The analysis could not be completed.",
-    retryable: true,
-    userAction: "Check the URL and try again.",
-  };
+  );
 }
 
 export function AnalyzerPanel() {

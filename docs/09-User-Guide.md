@@ -92,3 +92,20 @@ The application is local-first. It does not require an account, does not collect
 [3]: 04-System-Design.md "Queue, scheduler, and recovery behavior"
 [4]: 07-Security-Audit-Phase10.md "Phase 10 security-gate audit"
 [5]: 08-Release-Documentation.md "Release artifact and platform status"
+
+
+## Bandwidth limiting and monitoring
+
+Open the Queue workspace to view aggregate current throughput and the session byte total. Enter a global limit in **KB/s** and choose **Apply limit**. A value of `0` or an empty value means unlimited. The limit is shared by all active downloader workers, persists in local settings, and is enforced while streamed response bytes are written to `.part` files.
+
+The queue continues to report each job's own speed, while the aggregate bandwidth panel reports total current throughput and the configured global cap. The limiter affects transfer pacing only; it does not change URL validation, platform permissions, or access-control behavior.
+
+## Batch direct-media URL import
+
+In the Queue workspace, use **Choose .txt file** under **Batch import**. The file must contain one direct HTTPS media-file URL per line. Blank lines and lines beginning with `#` are ignored, duplicate lines are removed, and at most 500 URLs are processed from a file of up to 2 MB. Enter an absolute destination directory before selecting the file.
+
+Each URL is analyzed through the same `direct` adapter and download-plan validation used by a single URL. Only approved direct media extensions are queued. Instagram, TikTok, YouTube, Facebook, Reddit page URLs, and other social-page URLs are not converted into media URLs by batch import. Rejected lines do not stop the remaining valid lines from being queued; the import status reports the number queued and rejected.
+
+## Tauri desktop wrapper
+
+The application already runs as a Tauri 2 desktop wrapper. Browser-facing React code uses typed IPC commands, while Rust owns URL validation, filesystem writes, bandwidth pacing, queue persistence, recovery, and media processing. The web preview can render the interface, but download controls that require the Tauri bridge are only operational in the packaged desktop application.

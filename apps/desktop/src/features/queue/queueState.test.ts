@@ -55,12 +55,22 @@ describe("queue state projection", () => {
       total_bytes: 2_000,
       speed_bytes_per_sec: 1_000,
       eta_seconds: 1,
+      bandwidth: {
+        limit_bytes_per_sec: 1_024,
+        current_bytes_per_sec: 900,
+        total_bytes: 8_000,
+      },
     });
     expect(useQueueStore.getState().jobs[0]).toMatchObject({
       downloaded_bytes: 800,
       total_bytes: 2_000,
       speed_bytes_per_sec: 1_000,
       eta_seconds: 1,
+    });
+    expect(useQueueStore.getState().bandwidth).toEqual({
+      limit_bytes_per_sec: 1_024,
+      current_bytes_per_sec: 900,
+      total_bytes: 8_000,
     });
 
     useQueueStore.getState().applyProgress({

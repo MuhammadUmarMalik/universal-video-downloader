@@ -707,3 +707,10 @@ The frontend lists YouTube and Facebook as detection-only options and explains t
 Automatic platform detection now selects `DirectMediaAdapter` when the supplied HTTPS URL directly ends in an approved media extension. The adapter returns one media item and one progressive format without fetching the host page. The existing persistence snapshot, queue creation, download-plan, streaming, resume, finalization, history, and recovery paths then operate normally.
 
 Instagram and TikTok page URLs follow a separate detection-only path. Their adapters normalize supported public page URL shapes but return `MEDIA_UNAVAILABLE` before a format can be queued. The application never converts those page URLs into media-file URLs through cookies, credentials, browser sessions, undocumented extraction, DRM circumvention, private-content access, CAPTCHA or anti-bot bypass, or rate-limit evasion.
+
+
+## Bandwidth limiting and batch direct-media import
+
+The streaming engine owns one shared `BandwidthLimiter` instance per application process. All worker streams use the same limiter, so the configured cap is aggregate rather than per job. The limiter paces response bytes before writes, records cumulative bytes, and includes a bounded current-throughput snapshot in live progress events. A persisted `download.bandwidth_limit_kbps` setting uses `0` as unlimited and is updated through typed Tauri commands.
+
+The Queue workspace exposes the aggregate monitor and limit control. It also accepts a local text file containing one direct HTTPS media-file URL per line. The React layer bounds the file to 2 MB and 500 unique non-comment URLs, then sends each URL through the existing `direct` adapter and `create_download` queue boundary sequentially. The Rust analyzer, download-plan resolver, and streaming engine independently validate every URL; social-page URLs are never transformed into media-file URLs.

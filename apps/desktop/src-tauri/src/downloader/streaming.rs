@@ -1,6 +1,6 @@
 use super::{
-    finalize_part, DownloadPlan, FinalizationError, FinalizationResult, ProgressSampler,
-    StreamProgress,
+    finalize_part, BandwidthLimiter, BandwidthSnapshot, DownloadPlan, FinalizationError,
+    FinalizationResult, ProgressSampler, StreamProgress,
 };
 use crate::downloader::storage::{ensure_available_space, harden_file_permissions, StorageError};
 use reqwest::{Client, Response, StatusCode};
@@ -65,6 +65,7 @@ pub struct ResumableStreamResult {
 pub struct StreamingEngine {
     client: Client,
     max_response_bytes: u64,
+    bandwidth: BandwidthLimiter,
 }
 
 impl StreamingEngine {
@@ -84,11 +85,20 @@ impl StreamingEngine {
         Ok(Self {
             client,
             max_response_bytes,
+            bandwidth: BandwidthLimiter::unlimited(),
         })
     }
 
     pub const fn max_response_bytes(&self) -> u64 {
         self.max_response_bytes
+    }
+
+    pub fn set_bandwidth_limit_bytes_per_sec(&self, limit_bytes_per_sec: Option<u64>) {
+        self.bandwidth.set_limit_bytes_per_sec(limit_bytes_per_sec);
+    }
+
+    pub fn bandwidth_snapshot(&self) -> BandwidthSnapshot {
+        self.bandwidth.snapshot()
     }
 
     pub async fn stream_plan_and_finalize(
@@ -316,7 +326,14 @@ impl StreamingEngine {
                 self.max_response_bytes,
             )
             .map_err(StreamingError::from)?;
-            file.write_all(&chunk).await.map_err(map_file_error)?;
+            let mut offset = 0_usize;
+            while offset < chunk.len() {
+                let piece_len = self.bandwidth.max_chunk_size(chunk.len() - offset);
+                let piece = &chunk[offset..offset + piece_len];
+                self.bandwidth.acquire(piece.len() as u64).await;
+                file.write_all(piece).await.map_err(map_file_error)?;
+                offset += piece.len();
+            }
             bytes_written = next_size;
             if let Some(sample) = sampler.observe(Instant::now(), bytes_written, progress_total) {
                 on_progress(sample);
@@ -432,7 +449,14 @@ impl StreamingEngine {
                 self.max_response_bytes,
             )
             .map_err(StreamingError::from)?;
-            file.write_all(&chunk).await.map_err(map_file_error)?;
+            let mut offset = 0_usize;
+            while offset < chunk.len() {
+                let piece_len = self.bandwidth.max_chunk_size(chunk.len() - offset);
+                let piece = &chunk[offset..offset + piece_len];
+                self.bandwidth.acquire(piece.len() as u64).await;
+                file.write_all(piece).await.map_err(map_file_error)?;
+                offset += piece.len();
+            }
             bytes_written = next_size;
             if let Some(sample) = sampler.observe(Instant::now(), bytes_written, progress_total) {
                 on_progress(sample);

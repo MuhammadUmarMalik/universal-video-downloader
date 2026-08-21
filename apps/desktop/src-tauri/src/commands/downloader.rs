@@ -1,10 +1,11 @@
 use crate::application::ports::RepositoryError;
 use crate::application::services::AppServices;
+use crate::application::settings_service::{SettingKey, SettingValue, SettingsError};
 use crate::domain::entities::{DownloadJob, DownloadStatus, JobEvent};
 use crate::domain::errors::{AppError, ErrorCode};
-use crate::downloader::{ApplicationJobExecutor, DownloadWorkerPool};
+use crate::downloader::{ApplicationJobExecutor, BandwidthSnapshot, DownloadWorkerPool};
 use crate::media::MediaProcessingConfiguration;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::{Emitter, State, Window};
@@ -25,6 +26,33 @@ fn now_utc() -> String {
     OffsetDateTime::now_utc()
         .format(&Rfc3339)
         .unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_owned())
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BandwidthStatus {
+    pub limit_kbps: Option<u32>,
+    pub current_kbps: u64,
+    pub total_bytes: u64,
+}
+
+fn bandwidth_status(snapshot: BandwidthSnapshot) -> BandwidthStatus {
+    BandwidthStatus {
+        limit_kbps: snapshot
+            .limit_bytes_per_sec
+            .map(|value| (value / 1024).try_into().unwrap_or(u32::MAX)),
+        current_kbps: snapshot.current_bytes_per_sec / 1024,
+        total_bytes: snapshot.total_bytes,
+    }
+}
+
+fn settings_error(error: SettingsError) -> AppError {
+    AppError {
+        code: ErrorCode::DatabaseUnavailable,
+        message: "The bandwidth setting could not be saved.".to_owned(),
+        retryable: true,
+        user_action: Some("Try the bandwidth setting again.".to_owned()),
+        diagnostic: Some(error.to_string()),
+    }
 }
 
 fn invalid_request(message: &str) -> AppError {
@@ -75,6 +103,31 @@ fn repository_error(error: RepositoryError) -> AppError {
         user_action: Some("Review the request and try again.".to_owned()),
         diagnostic: None,
     }
+}
+
+#[tauri::command]
+pub fn get_bandwidth_status(
+    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
+) -> Result<BandwidthStatus, AppError> {
+    Ok(bandwidth_status(pool.bandwidth_snapshot()))
+}
+
+#[tauri::command]
+pub async fn set_bandwidth_limit(
+    services: State<'_, AppServices>,
+    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
+    limit_kbps: u32,
+) -> Result<BandwidthStatus, AppError> {
+    services
+        .settings
+        .set(
+            SettingKey::BandwidthLimitKbps,
+            SettingValue::BandwidthLimitKbps(limit_kbps),
+        )
+        .await
+        .map_err(settings_error)?;
+    pool.set_bandwidth_limit_kbps(limit_kbps);
+    Ok(bandwidth_status(pool.bandwidth_snapshot()))
 }
 
 #[tauri::command]

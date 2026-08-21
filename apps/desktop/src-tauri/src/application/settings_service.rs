@@ -8,6 +8,7 @@ use thiserror::Error;
 pub enum SettingKey {
     DefaultDirectory,
     ConcurrentJobs,
+    BandwidthLimitKbps,
     MaxRetries,
     RetryBackoff,
     FilenameTemplate,
@@ -20,9 +21,10 @@ pub enum SettingKey {
 }
 
 impl SettingKey {
-    pub const ALL: [Self; 11] = [
+    pub const ALL: [Self; 12] = [
         Self::DefaultDirectory,
         Self::ConcurrentJobs,
+        Self::BandwidthLimitKbps,
         Self::MaxRetries,
         Self::RetryBackoff,
         Self::FilenameTemplate,
@@ -38,6 +40,7 @@ impl SettingKey {
         match self {
             Self::DefaultDirectory => "download.default_directory",
             Self::ConcurrentJobs => "download.concurrent_jobs",
+            Self::BandwidthLimitKbps => "download.bandwidth_limit_kbps",
             Self::MaxRetries => "download.max_retries",
             Self::RetryBackoff => "download.retry_backoff",
             Self::FilenameTemplate => "download.filename_template",
@@ -54,6 +57,7 @@ impl SettingKey {
         match self {
             Self::DefaultDirectory => None,
             Self::ConcurrentJobs => Some(SettingValue::ConcurrentJobs(3)),
+            Self::BandwidthLimitKbps => Some(SettingValue::BandwidthLimitKbps(0)),
             Self::MaxRetries => Some(SettingValue::MaxRetries(3)),
             Self::RetryBackoff => Some(SettingValue::RetryBackoff(RetryBackoff {
                 base_seconds: 2,
@@ -102,6 +106,7 @@ pub enum Theme {
 pub enum SettingValue {
     DefaultDirectory(PathBuf),
     ConcurrentJobs(u8),
+    BandwidthLimitKbps(u32),
     MaxRetries(u8),
     RetryBackoff(RetryBackoff),
     FilenameTemplate(String),
@@ -190,6 +195,7 @@ impl SettingValue {
             (key, self),
             (SettingKey::DefaultDirectory, Self::DefaultDirectory(_))
                 | (SettingKey::ConcurrentJobs, Self::ConcurrentJobs(_))
+                | (SettingKey::BandwidthLimitKbps, Self::BandwidthLimitKbps(_))
                 | (SettingKey::MaxRetries, Self::MaxRetries(_))
                 | (SettingKey::RetryBackoff, Self::RetryBackoff(_))
                 | (SettingKey::FilenameTemplate, Self::FilenameTemplate(_))
@@ -223,6 +229,12 @@ impl SettingValue {
                 return Err(SettingsError::InvalidValue {
                     key: key.as_str().to_owned(),
                     reason: "must be between 1 and 8".to_owned(),
+                });
+            }
+            Self::BandwidthLimitKbps(value) if *value > 1_000_000 => {
+                return Err(SettingsError::InvalidValue {
+                    key: key.as_str().to_owned(),
+                    reason: "must be 0 (unlimited) or between 1 and 1,000,000 KB/s".to_owned(),
                 });
             }
             Self::MaxRetries(value) if *value > 10 => {
@@ -292,6 +304,12 @@ mod tests {
         assert!(SettingValue::ConcurrentJobs(8)
             .validate_for(SettingKey::ConcurrentJobs)
             .is_ok());
+        assert!(SettingValue::BandwidthLimitKbps(0)
+            .validate_for(SettingKey::BandwidthLimitKbps)
+            .is_ok());
+        assert!(SettingValue::BandwidthLimitKbps(1_000_001)
+            .validate_for(SettingKey::BandwidthLimitKbps)
+            .is_err());
         assert!(SettingValue::ConcurrentJobs(9)
             .validate_for(SettingKey::ConcurrentJobs)
             .is_err());
@@ -308,6 +326,10 @@ mod tests {
         assert_eq!(
             SettingKey::ConcurrentJobs.default_value(),
             Some(SettingValue::ConcurrentJobs(3))
+        );
+        assert_eq!(
+            SettingKey::BandwidthLimitKbps.default_value(),
+            Some(SettingValue::BandwidthLimitKbps(0))
         );
         assert_eq!(
             SettingKey::Theme.default_value(),

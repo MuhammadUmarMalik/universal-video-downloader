@@ -288,6 +288,22 @@ impl DownloadWorkerPool<ApplicationJobExecutor> {
         };
         let retry_policy = RetryPolicy::new(retry_backoff.base_seconds, retry_backoff.max_seconds)
             .map_err(|error| WorkerPoolError::Settings(error.to_string()))?;
+        let bandwidth_limit_kbps = match services
+            .settings
+            .get_or_default(crate::application::settings_service::SettingKey::BandwidthLimitKbps)
+            .await
+            .map_err(|error| WorkerPoolError::Settings(error.to_string()))?
+        {
+            Some(crate::application::settings_service::SettingValue::BandwidthLimitKbps(value))
+                if value > 0 =>
+            {
+                Some(u64::from(value))
+            }
+            _ => None,
+        };
+        engine.set_bandwidth_limit_bytes_per_sec(
+            bandwidth_limit_kbps.map(|value| value.saturating_mul(1024)),
+        );
         let processor = match MediaProcessor::from_system().await {
             Ok(processor) => Some(Arc::new(processor)),
             Err(error) => {
@@ -317,6 +333,28 @@ pub struct ApplicationJobExecutor {
     engine: Arc<StreamingEngine>,
     retry_policy: RetryPolicy,
     processor: Option<Arc<MediaProcessor>>,
+}
+
+impl ApplicationJobExecutor {
+    pub fn bandwidth_snapshot(&self) -> crate::downloader::BandwidthSnapshot {
+        self.engine.bandwidth_snapshot()
+    }
+
+    pub fn set_bandwidth_limit_kbps(&self, limit_kbps: u32) {
+        self.engine.set_bandwidth_limit_bytes_per_sec(
+            (limit_kbps > 0).then(|| u64::from(limit_kbps).saturating_mul(1024)),
+        );
+    }
+}
+
+impl DownloadWorkerPool<ApplicationJobExecutor> {
+    pub fn bandwidth_snapshot(&self) -> crate::downloader::BandwidthSnapshot {
+        self.executor.bandwidth_snapshot()
+    }
+
+    pub fn set_bandwidth_limit_kbps(&self, limit_kbps: u32) {
+        self.executor.set_bandwidth_limit_kbps(limit_kbps);
+    }
 }
 
 #[async_trait]
@@ -402,6 +440,7 @@ impl ClaimedJobExecutor for ApplicationJobExecutor {
                         total_bytes: sample.total_bytes,
                         speed_bytes_per_sec: sample.speed_bytes_per_sec,
                         eta_seconds: sample.eta_seconds,
+                        bandwidth: self.engine.bandwidth_snapshot(),
                     });
                 },
             )

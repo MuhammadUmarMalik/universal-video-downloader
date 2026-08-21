@@ -62,7 +62,7 @@ export default function App() {
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Registered adapters</span>
-                <span className="font-medium">Reddit · TikTok</span>
+                <span className="font-medium">Reddit · Direct media · Social detection</span>
               </div>
             </div>
             <p className="mt-5 text-sm leading-6 text-muted-foreground">{status.message}</p>
