@@ -448,6 +448,33 @@ mod integration_tests {
     }
 
     #[tokio::test]
+    async fn detection_only_tiktok_profile_returns_explicit_media_unavailable_error() {
+        let directory = tempdir().unwrap();
+        let database = crate::persistence::Database::from_app_data_dir(directory.path())
+            .await
+            .unwrap();
+        let services = AppServices::from_database(&database);
+        let analyzer = AnalyzerService::with_defaults(services).unwrap();
+
+        let error = analyzer
+            .analyze(AnalyzeRequest {
+                url: "https://www.tiktok.com/@stave087".to_owned(),
+                platform_id: None,
+            })
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            error.code,
+            crate::domain::errors::ErrorCode::MediaUnavailable
+        );
+        assert!(!error.retryable);
+        assert!(error
+            .message
+            .contains("no official public media download is available"));
+    }
+
+    #[tokio::test]
     async fn analyzer_selects_adapter_persists_snapshot_and_shapes_response() {
         let directory = tempdir().unwrap();
         let database = crate::persistence::Database::from_app_data_dir(directory.path())

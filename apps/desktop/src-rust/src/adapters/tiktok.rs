@@ -51,6 +51,21 @@ impl PlatformAdapter for TikTokAdapter {
     }
 }
 
+fn validate_username(username: &str) -> Result<String, AdapterError> {
+    let value = username
+        .strip_prefix('@')
+        .filter(|value| !value.is_empty() && value.len() <= 32)
+        .ok_or(AdapterError::UnsupportedUrl)?;
+    if value
+        .chars()
+        .all(|character| character.is_ascii_alphanumeric() || matches!(character, '_' | '.'))
+    {
+        Ok(value.to_owned())
+    } else {
+        Err(AdapterError::UnsupportedUrl)
+    }
+}
+
 fn normalize_tiktok_url(url: &Url) -> Result<NormalizedSource, AdapterError> {
     if url.scheme() != "https"
         || !url.username().is_empty()
@@ -75,23 +90,31 @@ fn normalize_tiktok_url(url: &Url) -> Result<NormalizedSource, AdapterError> {
         .first()
         .filter(|segment| segment.starts_with('@') && segment.len() > 1)
         .ok_or(AdapterError::UnsupportedUrl)?;
-    if segments.get(1) != Some(&"video") {
-        return Err(AdapterError::UnsupportedUrl);
-    }
-    let external_id = segments
-        .get(2)
-        .filter(|id| !id.is_empty() && id.chars().all(|character| character.is_ascii_digit()))
-        .ok_or(AdapterError::UnsupportedUrl)?;
-    let canonical_url = Url::parse(&format!(
-        "https://www.tiktok.com/{username}/video/{external_id}"
-    ))
-    .map_err(|_| AdapterError::InvalidUrl)?;
+    let username = validate_username(username)?;
+    let (canonical_path, external_id) = match segments.as_slice() {
+        [_] => (format!("@{username}"), format!("profile:{username}")),
+        [_, video, external_id]
+            if *video == "video"
+                && !external_id.is_empty()
+                && external_id
+                    .chars()
+                    .all(|character| character.is_ascii_digit()) =>
+        {
+            (
+                format!("@{username}/video/{external_id}"),
+                (*external_id).to_owned(),
+            )
+        }
+        _ => return Err(AdapterError::UnsupportedUrl),
+    };
+    let canonical_url = Url::parse(&format!("https://www.tiktok.com/{canonical_path}"))
+        .map_err(|_| AdapterError::InvalidUrl)?;
 
     Ok(NormalizedSource {
         platform_id: PLATFORM_ID.to_owned(),
         original_url: url.clone(),
         canonical_url,
-        external_id: (*external_id).to_owned(),
+        external_id,
     })
 }
 
@@ -118,8 +141,26 @@ mod tests {
     fn rejects_shortlinks_and_noncanonical_paths() {
         let adapter = TikTokAdapter::new();
         assert!(!adapter.detect(&Url::parse("https://vm.tiktok.com/abc123/").unwrap()));
-        assert!(!adapter.detect(&Url::parse("https://www.tiktok.com/@creator").unwrap()));
+        assert!(adapter.detect(&Url::parse("https://www.tiktok.com/@creator").unwrap()));
         assert!(!adapter.detect(&Url::parse("http://www.tiktok.com/@creator/video/123").unwrap()));
+    }
+
+    #[tokio::test]
+    async fn detects_and_normalizes_public_profile_urls() {
+        let adapter = TikTokAdapter::new();
+        let normalized = adapter
+            .normalize(&Url::parse("https://www.tiktok.com/@stave087?lang=en").unwrap())
+            .await
+            .unwrap();
+        assert_eq!(normalized.external_id, "profile:stave087");
+        assert_eq!(
+            normalized.canonical_url.as_str(),
+            "https://www.tiktok.com/@stave087"
+        );
+        assert!(matches!(
+            adapter.analyze(&normalized).await,
+            Err(crate::adapters::AdapterError::PublicMediaUnavailable)
+        ));
     }
 
     #[tokio::test]
