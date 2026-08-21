@@ -53,7 +53,7 @@ impl DownloadPlan {
             return Err(DownloadPlanError::InvalidFormatMetadata);
         }
 
-        if platform_id != "reddit" {
+        if !matches!(platform_id, "reddit" | "direct") {
             return Err(DownloadPlanError::UnsupportedPlatform);
         }
         let source_url = public_url_from_format(platform_id, format)?;
@@ -95,13 +95,22 @@ fn public_url_from_format(
         .host_str()
         .ok_or(DownloadPlanError::InvalidPublicUrl)?
         .to_ascii_lowercase();
-    if platform_id != "reddit" {
-        return Err(DownloadPlanError::UnsupportedPlatform);
+    match platform_id {
+        "reddit" if host == "v.redd.it" || host.ends_with(".redd.it") => Ok(url),
+        "direct" if is_direct_media_url(&url) => Ok(url),
+        "reddit" | "direct" => Err(DownloadPlanError::UnapprovedPublicHost),
+        _ => Err(DownloadPlanError::UnsupportedPlatform),
     }
-    if host != "v.redd.it" && !host.ends_with(".redd.it") {
-        return Err(DownloadPlanError::UnapprovedPublicHost);
-    }
-    Ok(url)
+}
+
+fn is_direct_media_url(url: &Url) -> bool {
+    const EXTENSIONS: &[&str] = &[
+        "mp4", "webm", "mov", "m4v", "mkv", "mp3", "m4a", "wav", "ogg", "flac", "aac", "opus",
+    ];
+    url.path_segments()
+        .and_then(|mut segments| segments.rfind(|segment| !segment.is_empty()))
+        .and_then(|segment| segment.rsplit_once('.').map(|(_, extension)| extension))
+        .is_some_and(|extension| EXTENSIONS.contains(&extension.to_ascii_lowercase().as_str()))
 }
 
 #[cfg(test)]
@@ -247,6 +256,31 @@ mod tests {
     }
 
     #[test]
+    fn resolves_a_direct_public_media_url() {
+        let mut media_item = item();
+        media_item.id = "direct:item:video".to_owned();
+        media_item.source_id = "direct:source:video".to_owned();
+        media_item.metadata_json = Some(json!({"platform_id": "direct"}));
+        let mut direct_format =
+            format(true, "https://cdn.example.test/video.mp4?token=short-lived");
+        direct_format.id = "direct:format:video".to_owned();
+        direct_format.media_item_id = media_item.id.clone();
+        direct_format.metadata_json =
+            Some(json!({"public_url": "https://cdn.example.test/video.mp4?token=short-lived"}));
+
+        let plan = DownloadPlan::resolve(
+            "direct",
+            &media_item,
+            &direct_format,
+            Path::new("/downloads"),
+            "video.mp4",
+        )
+        .unwrap();
+        assert_eq!(plan.platform_id, "direct");
+        assert_eq!(plan.source_url.host_str(), Some("cdn.example.test"));
+    }
+
+    #[test]
     fn rejects_non_reddit_platform_metadata() {
         let mut media_item = item();
         media_item.metadata_json = Some(json!({"platform_id": "tiktok"}));
@@ -259,6 +293,16 @@ mod tests {
                 "video.mp4",
             ),
             Err(DownloadPlanError::UnsupportedPlatform)
+        );
+        assert_eq!(
+            DownloadPlan::resolve(
+                "direct",
+                &media_item,
+                &format(true, "https://example.com/page"),
+                Path::new("/downloads"),
+                "video.mp4",
+            ),
+            Err(DownloadPlanError::UnapprovedPublicHost)
         );
     }
 }

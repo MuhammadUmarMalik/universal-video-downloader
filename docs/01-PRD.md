@@ -427,3 +427,10 @@ MVP is ready when:
 The initial release exposes independent platform detection for Reddit, TikTok, YouTube, and Facebook. Reddit is the only currently download-capable social-platform adapter because its implementation can restrict itself to explicitly exposed public media resources. TikTok, YouTube, and Facebook are detection-only adapters in the current release: they recognize supported public video URL shapes but do not expose downloadable formats.
 
 A detection-only result is intentional and fail-closed. The application must not use credentials, cookies, browser sessions, undocumented extraction paths, DRM circumvention, authentication or private-content bypass, CAPTCHA or anti-bot workarounds, or rate-limit evasion to turn a detected social-page URL into media bytes. These platforms may become download-capable only after an official, reviewed, public media-byte contract is available and approved under the project security gate.
+
+
+## Direct public-media URL support
+
+Users may supply an HTTPS URL that directly identifies a public media file, such as an `.mp4`, `.webm`, `.mov`, `.mp3`, or `.wav` resource. The direct-media adapter creates one progressive format without fetching or scraping the hosting page. The existing Rust download-plan and streaming boundaries validate HTTPS, reject embedded credentials and fragments, require an approved media-file extension, stream to a `.part` file, and finalize atomically.
+
+Instagram and TikTok social-page URLs remain detection-only. They are recognized for platform selection and normalized for diagnostics, but no downloadable format is returned unless a future official public media-byte contract is approved. Direct public-media URL support is not a mechanism for extracting media from a social page; the user must provide the media-file URL itself and be authorized to save the content.

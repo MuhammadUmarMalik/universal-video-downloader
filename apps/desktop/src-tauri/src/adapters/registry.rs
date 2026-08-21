@@ -1,5 +1,6 @@
 use super::{
-    AdapterError, FacebookAdapter, PlatformAdapter, RedditAdapter, TikTokAdapter, YouTubeAdapter,
+    AdapterError, DirectMediaAdapter, FacebookAdapter, InstagramAdapter, PlatformAdapter,
+    RedditAdapter, TikTokAdapter, YouTubeAdapter,
 };
 use std::sync::Arc;
 use thiserror::Error;
@@ -29,6 +30,8 @@ impl AdapterRegistry {
             Arc::new(TikTokAdapter::new()),
             Arc::new(YouTubeAdapter::new()),
             Arc::new(FacebookAdapter::new()),
+            Arc::new(InstagramAdapter::new()),
+            Arc::new(DirectMediaAdapter::new()),
         ]))
     }
 
@@ -79,7 +82,14 @@ mod tests {
         assert_eq!(registry.select(&url, None).unwrap().id(), "reddit");
         assert_eq!(
             registry.list(),
-            vec!["reddit", "tiktok", "youtube", "facebook"]
+            vec![
+                "reddit",
+                "tiktok",
+                "youtube",
+                "facebook",
+                "instagram",
+                "direct"
+            ]
         );
         let tiktok_url = Url::parse("https://www.tiktok.com/@creator/video/1234567890").unwrap();
         assert_eq!(registry.select(&tiktok_url, None).unwrap().id(), "tiktok");
@@ -90,6 +100,13 @@ mod tests {
             registry.select(&facebook_url, None).unwrap().id(),
             "facebook"
         );
+        let instagram_url = Url::parse("https://www.instagram.com/reel/ABC123").unwrap();
+        assert_eq!(
+            registry.select(&instagram_url, None).unwrap().id(),
+            "instagram"
+        );
+        let direct_url = Url::parse("https://cdn.example.test/video.mp4").unwrap();
+        assert_eq!(registry.select(&direct_url, None).unwrap().id(), "direct");
     }
 
     #[test]

@@ -118,7 +118,7 @@ impl StreamingEngine {
     where
         F: FnMut(StreamProgress),
     {
-        validate_target(&plan.source_url)?;
+        validate_target(&plan.platform_id, &plan.source_url)?;
         if plan
             .total_bytes
             .is_some_and(|total| total < 0 || total as u64 > self.max_response_bytes)
@@ -167,7 +167,7 @@ impl StreamingEngine {
     where
         F: FnMut(StreamProgress),
     {
-        validate_resumable_target(&plan.source_url)?;
+        validate_resumable_target(&plan.platform_id, &plan.source_url)?;
         if plan.total_bytes.is_some_and(|total| total < 0) {
             return Err(StreamingError::ContentLengthMismatch);
         }
@@ -509,7 +509,7 @@ fn parse_content_range(value: &str) -> Result<(u64, u64, Option<u64>), Streaming
     Ok((start, end, total))
 }
 
-fn validate_resumable_target(url: &Url) -> Result<(), StreamingError> {
+fn validate_resumable_target(platform_id: &str, url: &Url) -> Result<(), StreamingError> {
     #[cfg(test)]
     if url.scheme() == "http"
         && matches!(url.host_str(), Some("127.0.0.1" | "localhost"))
@@ -519,10 +519,10 @@ fn validate_resumable_target(url: &Url) -> Result<(), StreamingError> {
     {
         return Ok(());
     }
-    validate_target(url)
+    validate_target(platform_id, url)
 }
 
-fn validate_target(url: &Url) -> Result<(), StreamingError> {
+fn validate_target(platform_id: &str, url: &Url) -> Result<(), StreamingError> {
     if url.scheme() != "https"
         || !url.username().is_empty()
         || url.password().is_some()
@@ -534,10 +534,27 @@ fn validate_target(url: &Url) -> Result<(), StreamingError> {
         return Err(StreamingError::InvalidTarget);
     };
     let host = host.to_ascii_lowercase();
-    if host != "v.redd.it" && !host.ends_with(".redd.it") {
-        return Err(StreamingError::InvalidTarget);
+    match platform_id {
+        "reddit" if host == "v.redd.it" || host.ends_with(".redd.it") => Ok(()),
+        "direct" if is_direct_media_url(url) => Ok(()),
+        _ => Err(StreamingError::InvalidTarget),
     }
-    Ok(())
+}
+
+fn is_direct_media_url(url: &Url) -> bool {
+    const EXTENSIONS: &[&str] = &[
+        "mp4", "webm", "mov", "m4v", "mkv", "mp3", "m4a", "wav", "ogg", "flac", "aac", "opus",
+    ];
+    let Some(segment) = url
+        .path_segments()
+        .and_then(|mut segments| segments.rfind(|segment| !segment.is_empty()))
+    else {
+        return false;
+    };
+    let Some((_, extension)) = segment.rsplit_once('.') else {
+        return false;
+    };
+    EXTENSIONS.contains(&extension.to_ascii_lowercase().as_str())
 }
 
 #[cfg(test)]

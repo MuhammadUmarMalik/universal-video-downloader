@@ -700,3 +700,10 @@ Media processing rejects symlink and non-regular inputs, rejects input files abo
 The analyzer supports strict URL detection for public YouTube and Facebook video URL shapes. When either adapter is selected, the backend normalizes the URL and then returns a typed `MEDIA_UNAVAILABLE` result because the current project has no approved official public media-byte contract for those platforms.
 
 The frontend lists YouTube and Facebook as detection-only options and explains that the application will not use credentials, cookies, browser sessions, undocumented extraction, DRM circumvention, private-content or authentication bypass, CAPTCHA or anti-bot workarounds, or rate-limit evasion. A detected social-page URL therefore cannot be added to the download queue unless a future adapter exposes a validated public media format through an approved contract.
+
+
+## Direct public-media URL and detection-only social flow
+
+Automatic platform detection now selects `DirectMediaAdapter` when the supplied HTTPS URL directly ends in an approved media extension. The adapter returns one media item and one progressive format without fetching the host page. The existing persistence snapshot, queue creation, download-plan, streaming, resume, finalization, history, and recovery paths then operate normally.
+
+Instagram and TikTok page URLs follow a separate detection-only path. Their adapters normalize supported public page URL shapes but return `MEDIA_UNAVAILABLE` before a format can be queued. The application never converts those page URLs into media-file URLs through cookies, credentials, browser sessions, undocumented extraction, DRM circumvention, private-content access, CAPTCHA or anti-bot bypass, or rate-limit evasion.

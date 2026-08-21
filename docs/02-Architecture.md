@@ -495,3 +495,10 @@ The adapter registry now includes `YouTubeAdapter` and `FacebookAdapter` alongsi
 They intentionally do not perform page scraping, browser-session reuse, credential handling, cookie handling, undocumented media extraction, or access-control workarounds. Their `analyze` and `resolve_formats` methods return `PublicMediaUnavailable`, which maps to a user-facing `MEDIA_UNAVAILABLE` response explaining that the platform was detected but no official public media download path is available. This keeps platform selection and URL detection extensible without falsely claiming download support.
 
 The current capability matrix is therefore: Reddit is public-media download capable within its narrow approved-host boundary; TikTok, YouTube, and Facebook are detection-only; and the generic downloader remains restricted to validated direct public media resources accepted by the existing download-plan policy.
+
+
+## Direct public-media adapter and Instagram/TikTok scope
+
+`DirectMediaAdapter` handles only user-supplied HTTPS URLs whose final path component has an approved media-file extension. It performs no page fetch or scrape during analysis; instead, it creates a single persisted media item and progressive format pointing to the supplied URL. The download-plan resolver and streaming engine independently revalidate the URL, host presence, HTTPS scheme, absence of credentials/fragments, and approved media extension before transfer.
+
+Instagram and TikTok adapters remain platform-page detection adapters. They normalize supported public post/reel/video URL shapes but return `PublicMediaUnavailable` from analysis and format resolution. This separation prevents a social-page URL from being treated as a direct file URL and preserves the no-cookie, no-credential, no-browser-session, no-bypass security boundary.

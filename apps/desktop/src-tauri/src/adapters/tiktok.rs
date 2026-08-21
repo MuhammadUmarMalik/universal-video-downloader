@@ -31,11 +31,11 @@ impl PlatformAdapter for TikTokAdapter {
     }
 
     async fn analyze(&self, _source: &NormalizedSource) -> Result<AnalysisResult, AdapterError> {
-        Err(AdapterError::AuthenticationRequired)
+        Err(AdapterError::PublicMediaUnavailable)
     }
 
     async fn resolve_formats(&self, _item: &MediaItem) -> Result<Vec<MediaFormat>, AdapterError> {
-        Err(AdapterError::AuthenticationRequired)
+        Err(AdapterError::PublicMediaUnavailable)
     }
 
     fn capabilities(&self) -> PlatformCapabilities {
@@ -44,7 +44,7 @@ impl PlatformAdapter for TikTokAdapter {
             collections: false,
             audio_only: false,
             thumbnails: false,
-            metadata: true,
+            metadata: false,
             resume: false,
             scheduling: false,
         }
@@ -123,14 +123,14 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn fails_closed_without_credentials_or_media_access_workarounds() {
+    async fn fails_closed_without_an_official_public_media_byte_path() {
         let adapter = TikTokAdapter::new();
         let url = Url::parse("https://www.tiktok.com/@creator/video/1234567890").unwrap();
         let normalized = adapter.normalize(&url).await.unwrap();
         let error = adapter.analyze(&normalized).await.unwrap_err();
         assert!(matches!(
             error,
-            crate::adapters::AdapterError::AuthenticationRequired
+            crate::adapters::AdapterError::PublicMediaUnavailable
         ));
     }
 }
