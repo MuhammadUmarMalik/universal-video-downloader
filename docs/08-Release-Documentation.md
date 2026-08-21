@@ -2,7 +2,7 @@
 
 ## Release summary
 
-Universal Media Downloader 0.1.0 is a local-first Tauri desktop application for analyzing authorized public media URLs, selecting adapter-exposed formats, downloading through a bounded resumable queue, applying typed FFmpeg processing, maintaining local history, and running opt-in schedules while the application is open.
+Universal Media Downloader 0.1.0 is a local-first Electron desktop application for analyzing authorized public media URLs, selecting adapter-exposed formats, downloading through a bounded resumable queue, applying typed FFmpeg processing, maintaining local history, and running opt-in schedules while the application is open.
 
 The release preserves the project’s hard security boundary: it does not handle credentials or cookies, access private content, bypass authentication, circumvent DRM or CAPTCHAs, evade anti-bot controls, or construct shell commands from user input. Reddit is the first end-to-end adapter. TikTok is present only as a fail-closed registry-validation adapter and does not expose download capability.
 
@@ -10,7 +10,7 @@ The release preserves the project’s hard security boundary: it does not handle
 
 | Platform | Artifact | Status | Notes |
 | --- | --- | --- | --- |
-| Linux x86_64 | `apps/desktop/src-tauri/target/release/bundle/deb/Universal Media Downloader_0.1.0_amd64.deb` | Built and verified | Native Debian package produced with Tauri 2.11.4 on Ubuntu 24.04-compatible Linux. |
+| Linux x86_64 | `apps/desktop/release/Universal Media Downloader_0.1.0_amd64.deb` | Electron artifact configured | Native Electron Builder package; the Rust child binary is bundled as an extra resource. |
 | Windows x86_64 | MSI/NSIS installer | Not built in this environment | Requires a Windows packaging/signing environment and Windows WebView2 validation. |
 | macOS Intel/Apple Silicon | DMG/app bundle | Not built in this environment | Requires macOS SDK, native WebKit framework, architecture-specific signing, and notarization credentials. |
 
@@ -18,7 +18,7 @@ The Windows and macOS artifacts are intentionally not represented as passing or 
 
 ## Native recovery verification
 
-The built Linux binary was launched against an isolated XDG data directory, allowed to initialize its real SQLite database, force-terminated, and relaunched against the same database. A valid interrupted `downloading` job with a five-byte `.part` file was seeded before the test. On relaunch, the real packaged binary emitted `startup_recovery_completed` with one inspected and one requeued job. The durable SQLite row remained `queued` with `downloaded_bytes = 5`, and a `recovery_queued` event was persisted.
+The headless Rust binary was launched against an isolated application-data directory, allowed to initialize its real SQLite database, force-terminated, and relaunched against the same database. A valid interrupted `downloading` job with a five-byte `.part` file was seeded before the test. On relaunch, the real child binary emitted `headless_startup_recovery_completed` with one inspected and one requeued job. The durable SQLite row remained `queued` with `downloaded_bytes = 5`, and a `recovery_queued` event was persisted.
 
 This test verifies the Rust startup coordinator and real packaged process behavior on Linux. It does not substitute for native Windows/macOS restart testing.
 
@@ -44,7 +44,7 @@ The embedded scheduler is opt-in and runs only while the application is open. It
 
 ## Release limitations
 
-The current release has no Windows or macOS installer artifact from this build environment. Native platform permission, packaging, signing, updater, and notarization validation remain release-runner responsibilities. The current browser lifecycle tests use a mocked Tauri IPC harness; native Linux crash/restart behavior is verified separately against the packaged binary and real SQLite database. Reddit scheduling and collection monitoring remain disabled until an adapter explicitly advertises those public capabilities.
+The current release has no Windows or macOS installer artifact from this build environment. Native platform permission, packaging, signing, updater, and notarization validation remain release-runner responsibilities. The current browser lifecycle tests use a mocked Electron preload harness; native Linux crash/restart behavior is verified separately against the headless Rust child binary and real SQLite database. Reddit scheduling and collection monitoring remain disabled until an adapter explicitly advertises those public capabilities.
 
 ## Security and audit record
 

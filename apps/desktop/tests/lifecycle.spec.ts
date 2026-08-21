@@ -28,8 +28,10 @@ type MockWindow = Window & {
     crashNextBridgeCall(): void;
     emitProgress(payload: unknown): void;
   };
-  __TAURI_INTERNALS__: {
+  electronAPI: {
     invoke(command: string, args?: MockInvokeArgs): Promise<unknown>;
+    onDownloadProgress(callback: (payload: unknown) => void): () => void;
+    onBridgeError(callback: (payload: { message: string }) => void): () => void;
   };
 };
 
@@ -79,9 +81,7 @@ async function installMockTauri(page: Page) {
     const storageKey = "umd-playwright-lifecycle-jobs";
     const recoveryKey = "umd-playwright-recovery-pending";
     const crashKey = "umd-playwright-bridge-crashed";
-    const callbacks: Record<string, (payload: unknown) => void> = {};
-    const listeners: Record<string, number> = {};
-    let callbackSequence = 0;
+    const progressCallbacks: Array<(payload: unknown) => void> = [];
 
     function readJobs(): MockJob[] {
       const raw = window.localStorage.getItem(storageKey);
@@ -145,14 +145,16 @@ async function installMockTauri(page: Page) {
       };
     }
 
-    window.__TAURI_INTERNALS__ = {
-      transformCallback(callback: (payload: unknown) => void) {
-        const id = String(++callbackSequence);
-        callbacks[id] = callback;
-        return Number(id);
+    window.electronAPI = {
+      onDownloadProgress(callback: (payload: unknown) => void) {
+        progressCallbacks.push(callback);
+        return () => {
+          const index = progressCallbacks.indexOf(callback);
+          if (index >= 0) progressCallbacks.splice(index, 1);
+        };
       },
-      unregisterCallback(id: number) {
-        delete callbacks[String(id)];
+      onBridgeError() {
+        return () => undefined;
       },
       invoke(command: string, args: MockInvokeArgs = {}) {
         if (command === "get_download_jobs" && window.localStorage.getItem(crashKey) === "1") {
@@ -163,19 +165,13 @@ async function installMockTauri(page: Page) {
             retryable: true,
           });
         }
-        if (command === "plugin:event|listen") {
-          listeners[args.event] = args.handler;
-          return Promise.resolve(1);
-        }
-        if (command === "plugin:event|unlisten" || command === "subscribe_download_progress") {
-          return Promise.resolve(true);
-        }
+        if (command === "subscribe_download_progress") return Promise.resolve(true);
         if (command === "get_foundation_status") {
           return Promise.resolve({
             appName: "Universal Media Downloader",
             phase: "hardening",
-            tauri: true,
-            message: "Playwright Tauri IPC harness",
+            electron: true,
+            message: "Playwright Electron IPC harness",
           });
         }
         if (command === "analyze_url") return Promise.resolve(response);
@@ -211,8 +207,7 @@ async function installMockTauri(page: Page) {
         window.localStorage.setItem(crashKey, "1");
       },
       emitProgress(payload: unknown) {
-        const callbackId = listeners["download-progress"];
-        if (callbackId) callbacks[String(callbackId)]({ event: "download-progress", id: 1, payload });
+        progressCallbacks.forEach((callback) => callback(payload));
       },
       clear() {
         window.localStorage.removeItem(storageKey);
@@ -324,7 +319,7 @@ test.describe("download lifecycle IPC contract", () => {
       updated_at: new Date().toISOString(),
     }));
     await page.getByRole("button", { name: "Refresh queue" }).click();
-    await expect(page.getByText("Completed", { exact: true })).toBeVisible();
+    await expect(page.getByRole("article").getByText("Completed", { exact: true })).toBeVisible();
   });
 
   test("simulates restart recovery for an interrupted download and preserves the offset", async ({ page }) => {
@@ -343,7 +338,7 @@ test.describe("download lifecycle IPC contract", () => {
     const rejected = await page.evaluate(async () => {
       (window as MockWindow).__UMD_PLAYWRIGHT__.crashNextBridgeCall();
       try {
-        await (window as MockWindow).__TAURI_INTERNALS__.invoke("get_download_jobs");
+        await (window as MockWindow).electronAPI.invoke("get_download_jobs");
         return false;
       } catch {
         return true;

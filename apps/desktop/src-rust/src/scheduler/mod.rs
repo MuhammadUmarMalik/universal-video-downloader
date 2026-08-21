@@ -117,7 +117,7 @@ impl SchedulerLoop {
 
     pub fn start(&self) {
         let scheduler = self.clone();
-        tauri::async_runtime::spawn(async move {
+        tokio::spawn(async move {
             scheduler.run().await;
         });
     }

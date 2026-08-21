@@ -67,7 +67,7 @@ Before implementing anything, inspect the repository. The following documents ar
 - `docs/05-API-Endpoint-Design.md`
 - `docs/06-Tech-Stack.md`
 
-Also inspect: `package.json`, `Cargo.toml`, `src/`, `src-tauri/`, `migrations/`, `tests/`, configuration files, CI/CD configuration.
+Also inspect: `package.json`, `Cargo.toml`, `src/`, `src-rust/`, `migrations/`, `tests/`, configuration files, CI/CD configuration.
 
 If the repository differs from the documentation:
 1. Determine whether the repository contains newer intentional decisions.
@@ -79,7 +79,7 @@ If the repository differs from the documentation:
 
 ## 3. Technology Requirements
 
-**Desktop:** Tauri 2.x
+**Desktop:** Electron.js with a secure context-isolated preload bridge
 
 **Frontend:** React, TypeScript, Tailwind CSS, shadcn/ui, Zustand, TanStack Query
 
@@ -98,7 +98,7 @@ If the repository differs from the documentation:
 Follow: Clean Architecture, Hexagonal Architecture, SOLID, Dependency Inversion, Adapter Pattern, Repository Pattern, Service Layer, Event-driven queue updates.
 
 - The frontend must NEVER directly implement download logic.
-- The frontend communicates with the Rust backend through Tauri IPC.
+- The frontend communicates with the Rust backend through the Electron context-isolated preload bridge and a local JSON-line IPC child process.
 - Platform-specific behavior belongs inside adapters.
 - Download execution belongs inside the Download Engine.
 - Database access belongs inside repositories.
@@ -128,7 +128,7 @@ apps/
     │   ├── lib/
     │   └── types/
     │
-    └── src-tauri/
+    └── src-rust/
         └── src/
             ├── commands/
             ├── domain/

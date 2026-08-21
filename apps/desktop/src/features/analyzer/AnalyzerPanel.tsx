@@ -1,7 +1,7 @@
 import { normalizeAppError, type AnalyzeResponse, type AppError } from "@umd/shared-types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { analyzeUrl } from "@/lib/tauri";
+import { analyzeUrl } from "@/lib/desktopBridge";
 import { AnalysisResults } from "./AnalysisResults";
 
 function toAppError(error: unknown): AppError {

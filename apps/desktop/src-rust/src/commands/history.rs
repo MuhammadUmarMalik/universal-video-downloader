@@ -2,7 +2,6 @@ use crate::application::ports::RepositoryError;
 use crate::application::services::AppServices;
 use crate::domain::entities::HistoryEntry;
 use crate::domain::errors::{AppError, ErrorCode};
-use tauri::State;
 
 fn repository_error(error: RepositoryError) -> AppError {
     let (code, message) = match error {
@@ -26,9 +25,8 @@ fn repository_error(error: RepositoryError) -> AppError {
     }
 }
 
-#[tauri::command]
-pub async fn get_history(
-    services: State<'_, AppServices>,
+pub async fn get_history_core(
+    services: &AppServices,
     query: Option<String>,
 ) -> Result<Vec<HistoryEntry>, AppError> {
     services
@@ -37,9 +35,8 @@ pub async fn get_history(
         .map_err(repository_error)
 }
 
-#[tauri::command]
-pub async fn delete_history_entry(
-    services: State<'_, AppServices>,
+pub async fn delete_history_entry_core(
+    services: &AppServices,
     id: String,
 ) -> Result<bool, AppError> {
     if id.trim().is_empty() {
@@ -57,7 +54,6 @@ pub async fn delete_history_entry(
         .map_err(repository_error)
 }
 
-#[tauri::command]
-pub async fn clear_history(services: State<'_, AppServices>) -> Result<u64, AppError> {
+pub async fn clear_history_core(services: &AppServices) -> Result<u64, AppError> {
     services.clear_history().await.map_err(repository_error)
 }

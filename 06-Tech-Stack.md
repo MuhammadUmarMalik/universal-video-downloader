@@ -4,7 +4,7 @@
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| Desktop | Tauri 2.x | Native desktop shell |
+| Desktop | Electron.js | Native desktop shell with context-isolated preload bridge |
 | Frontend | React | UI |
 | Language | TypeScript | Frontend typing |
 | Styling | Tailwind CSS | UI styling |
@@ -42,7 +42,7 @@
 | CI/CD | GitHub Actions |
 | Monitoring | Sentry + structured logs |
 
-## 3. Why Tauri + Rust
+## 3. Why Electron + Rust
 
 The application is download-heavy and filesystem-heavy. Rust provides:
 
@@ -79,7 +79,7 @@ Use feature-oriented modules instead of one giant component directory.
 ## 5. Rust Structure
 
 ```text
-src-tauri/src/
+src-rust/src/
 ├── commands/
 ├── domain/
 ├── application/
@@ -189,13 +189,14 @@ Prefer:
 4. Pinned versions.
 5. Automated dependency auditing.
 
-Avoid unnecessary packages for functionality already provided by Tauri/Rust/browser APIs.
+Avoid unnecessary packages for functionality already provided by Electron/Rust/browser APIs.
 
 ## 11. Recommended MVP Stack
 
 ```text
 Desktop
-└── Tauri
+└── Electron
+    ├── Secure preload bridge
     ├── React
     ├── TypeScript
     ├── Tailwind CSS

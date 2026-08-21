@@ -12,8 +12,29 @@ import type {
   SchedulerRunReport,
   UpdateScheduleRequest,
 } from "@umd/shared-types";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/core";
+
+type ElectronApi = {
+  invoke<T>(command: string, args?: Record<string, unknown>): Promise<T>;
+  onDownloadProgress(callback: (event: LiveProgressEvent) => void): () => void;
+  onBridgeError(callback: (payload: { message: string }) => void): () => void;
+};
+
+declare global {
+  interface Window {
+    electronAPI?: ElectronApi;
+  }
+}
+
+function api(): ElectronApi {
+  if (!window.electronAPI) {
+    throw new Error("The Electron desktop bridge is unavailable.");
+  }
+  return window.electronAPI;
+}
+
+function invoke<T>(command: string, args: Record<string, unknown> = {}): Promise<T> {
+  return api().invoke<T>(command, args);
+}
 
 export async function analyzeUrl(request: AnalyzeRequest): Promise<AnalyzeResponse> {
   return invoke<AnalyzeResponse>("analyze_url", { request });
@@ -41,10 +62,8 @@ export async function getDownloadJobs(): Promise<DownloadJob[]> {
 
 export async function subscribeDownloadProgress(
   onProgress: (event: LiveProgressEvent) => void,
-): Promise<UnlistenFn> {
-  const unlisten = await listen<LiveProgressEvent>("download-progress", (event) => {
-    onProgress(event.payload);
-  });
+): Promise<() => void> {
+  const unlisten = api().onDownloadProgress(onProgress);
   try {
     await invoke<boolean>("subscribe_download_progress");
     return unlisten;
@@ -101,8 +120,8 @@ export async function getFoundationStatus(): Promise<FoundationStatus> {
     return {
       appName: "Universal Media Downloader",
       phase: "foundation",
-      tauri: false,
-      message: "The web preview is running outside the Tauri shell.",
+      electron: false,
+      message: "The web preview is running outside the Electron shell.",
     };
   }
 }

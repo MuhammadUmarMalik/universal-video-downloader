@@ -7,7 +7,8 @@ This archive contains the complete application source, not only the initial dire
 The main application code is under `apps/desktop/`:
 
 - `apps/desktop/src/` — React and TypeScript frontend.
-- `apps/desktop/src-tauri/src/` — Rust/Tauri backend, downloader, recovery coordinator, scheduler, media processing, persistence, and security boundaries.
+- `apps/desktop/electron/` — Electron main and isolated preload processes.
+- `apps/desktop/src-rust/src/` — Headless Rust backend, downloader, recovery coordinator, scheduler, media processing, persistence, and security boundaries.
 - `apps/desktop/tests/` — Playwright smoke and lifecycle tests.
 - `packages/shared-types/src/` — Shared TypeScript contracts.
 - `scripts/` — Native recovery fixture, assertions, and smoke-test wrapper.
@@ -24,7 +25,8 @@ pnpm test:e2e
 For the Linux native recovery smoke test, build the release binary first:
 
 ```bash
-cargo tauri build --bundles deb
+cargo build --release --manifest-path apps/desktop/src-rust/Cargo.toml
+pnpm --filter @umd/desktop package:electron
 pnpm test:native:recovery
 ```
 

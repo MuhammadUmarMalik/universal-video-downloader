@@ -79,7 +79,7 @@ Use feature-oriented modules instead of one giant component directory.
 ## 5. Rust Structure
 
 ```text
-src-tauri/src/
+src-rust/src/
 ├── commands/
 ├── domain/
 ├── application/
@@ -249,7 +249,7 @@ The verified development baseline requires Node.js with pnpm, Rust stable, Cargo
 
 ## 14. Phase 2 Persistence Baseline
 
-Phase 2 adds SQLx `0.9.0` with SQLite, Tokio runtime, migration, and macro features. The migration source is embedded from `apps/desktop/src-tauri/migrations/` with `sqlx::migrate!("./migrations")`, and the Rust build script emits `cargo:rerun-if-changed=migrations` so migration-file changes trigger recompilation.
+Phase 2 adds SQLx `0.9.0` with SQLite, Tokio runtime, migration, and macro features. The migration source is embedded from `apps/desktop/src-rust/migrations/` with `sqlx::migrate!("./migrations")`, and the Rust build script emits `cargo:rerun-if-changed=migrations` so migration-file changes trigger recompilation.
 
 The database wrapper uses a four-connection bounded pool, creates `umd.sqlite3` under the Tauri application-data directory, enables foreign keys, selects WAL journal mode, uses full synchronous durability, and applies a five-second busy timeout. Runtime query APIs are used for the current bootstrap and tests; compile-time SQLx query macros remain available for later repository work after an offline-check workflow is chosen.
 
@@ -317,3 +317,12 @@ Phase 10 adds a Rust-owned `StartupRecoveryCoordinator` that runs after SQLite m
 The downloader uses `fs2` for cross-platform free-space checks with fixed headroom before requests and on each write. The application-data directory and SQLite database use private Unix modes, while partial, finalized, recovered, and FFmpeg output files are hardened to private modes where the platform exposes Unix permissions. System FFmpeg resolution rejects group- and world-writable binaries on Unix.
 
 Typed media processing enforces a four-GiB input/output bound, regular-file and symlink checks, bounded diagnostics, direct arguments, timeout, cancellation, and atomic output finalization. These controls mitigate resource exhaustion and malformed-media risks without attempting to identify or bypass any platform access control.
+
+
+## 18. Electron desktop-shell migration
+
+The active desktop shell is now **Electron.js**. The renderer runs with `contextIsolation: true`, `nodeIntegration: false`, and a sandboxed preload bridge. The preload exposes only typed command invocation and download-progress subscription methods; it does not expose filesystem, process, shell, or arbitrary IPC APIs to React.
+
+Electron’s main process launches the Rust executable with `--headless` and passes an application-data directory through `UMD_APP_DATA_DIR`. The Rust process initializes SQLite, recovery, the downloader worker pool, bandwidth limiter, and scheduler, then serves a local JSON-lines request/response protocol over stdin/stdout. Progress notifications are emitted as typed JSON event lines. Electron forwards only the allowlisted `download-progress` event to the renderer.
+
+The Rust crate remains under `apps/desktop/src-rust/` as a historical directory name for the existing migration and SQLx assets, but it no longer depends on Tauri or opens a Tauri window. Electron Builder packages the React bundle, Electron main/preload files, and the release Rust binary as the desktop application.

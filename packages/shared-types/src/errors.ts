@@ -38,7 +38,7 @@ export function isAppError(value: unknown): value is AppError {
   );
 }
 
-/** Normalize frontend-shaped, Rust-shaped, or nested Tauri invoke errors. */
+/** Normalize frontend-shaped, Rust-shaped, or nested Electron bridge invoke errors. */
 export function normalizeAppError(value: unknown): AppError | null {
   const candidates: unknown[] = [value];
   if (typeof value === "object" && value !== null) {
@@ -49,7 +49,7 @@ export function normalizeAppError(value: unknown): AppError | null {
     try {
       candidates.push(JSON.parse(value));
     } catch {
-      // Tauri may reject with a non-JSON diagnostic string; use the stable fallback.
+      // The bridge may reject with a non-JSON diagnostic string; use the stable fallback.
     }
   }
 

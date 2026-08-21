@@ -353,7 +353,7 @@ Each error includes a human-readable message, stable code, retryable flag, and s
 
 ### P0
 
-- Tauri desktop shell.
+- Electron desktop shell with a secure preload bridge.
 - React/TypeScript UI.
 - Platform selector.
 - URL analyzer.

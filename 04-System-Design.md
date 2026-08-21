@@ -21,7 +21,7 @@ The system must reliably:
 UI
  │
  ▼
-Tauri Command Layer
+Electron Bridge / JSON-lines IPC
  │
  ▼
 Application Services
@@ -53,7 +53,7 @@ User
 UI
  │
  ▼
-Tauri Command
+Electron Bridge
  │
  ▼
 AnalysisService

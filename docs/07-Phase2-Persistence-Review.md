@@ -21,7 +21,7 @@ The recommended implementation sequence is to add one atomic baseline migration,
 ## 3. Proposed Phase 2 layout
 
 ```text
-apps/desktop/src-tauri/
+apps/desktop/src-rust/
 ├── migrations/
 │   └── 0001_initial.sql
 └── src/
@@ -158,7 +158,7 @@ The `macros` feature is needed if compile-time query macros are used. The `migra
 
 ### 5.2 Migration location and embedding
 
-Migrations should live at `apps/desktop/src-tauri/migrations/` beside the Rust crate’s `Cargo.toml`. The first migration should be a single atomic baseline, for example `0001_initial.sql`, creating the required tables in parent-to-child order and then creating indexes and seeds. Subsequent changes must use new immutable migration files such as `0002_add_media_item_fingerprint.sql`; an applied migration must never be edited.
+Migrations should live at `apps/desktop/src-rust/migrations/` beside the Rust crate’s `Cargo.toml`. The first migration should be a single atomic baseline, for example `0001_initial.sql`, creating the required tables in parent-to-child order and then creating indexes and seeds. Subsequent changes must use new immutable migration files such as `0002_add_media_item_fingerprint.sql`; an applied migration must never be edited.
 
 The Rust crate should define an embedded migrator:
 
@@ -311,7 +311,7 @@ The recommended execution order is intentionally incremental:
 |---|---|---|
 | Identifier format | UUIDv7 text or documented ULID; use one format everywhere | Yes |
 | Timestamp format | RFC 3339 UTC text generated in Rust | No objection assumed, but document it |
-| Migration location | `apps/desktop/src-tauri/migrations/` | No objection assumed |
+| Migration location | `apps/desktop/src-rust/migrations/` | No objection assumed |
 | Migration baseline | One atomic `0001_initial.sql` for all required tables | Yes |
 | Foreign-key delete policy | Conservative `RESTRICT` for history-bearing parents, explicit cascades only for cache-like children | Yes |
 | Database journal | WAL, set consistently on every connection | Yes |

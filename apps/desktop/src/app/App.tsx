@@ -5,13 +5,13 @@ import { AnalyzerPanel } from "@/features/analyzer/AnalyzerPanel";
 import { HistoryPanel } from "@/features/history/HistoryPanel";
 import { QueuePanel } from "@/features/queue/QueuePanel";
 import { SchedulerPanel } from "@/features/scheduler/SchedulerPanel";
-import { getFoundationStatus } from "@/lib/tauri";
+import { getFoundationStatus } from "@/lib/desktopBridge";
 
 const fallbackStatus: FoundationStatus = {
   appName: "Universal Media Downloader",
   phase: "foundation",
-  tauri: false,
-  message: "The web preview is running outside the Tauri shell.",
+  electron: false,
+  message: "The web preview is running outside the Electron shell.",
 };
 
 export default function App() {
@@ -53,8 +53,8 @@ export default function App() {
             <p className="text-sm font-medium text-muted-foreground">Runtime status</p>
             <div className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
-                <span>Tauri bridge</span>
-                <span className="font-medium text-primary">{status.tauri ? "Connected" : "Preview"}</span>
+                <span>Electron bridge</span>
+                <span className="font-medium text-primary">{status.electron ? "Connected" : "Preview"}</span>
               </div>
               <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
                 <span>Analyzer boundary</span>

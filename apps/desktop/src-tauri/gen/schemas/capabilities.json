@@ -1,1 +1,0 @@
-{"default":{"identifier":"default","description":"Minimal Phase 1 permissions for the desktop shell.","local":true,"windows":["main"],"permissions":["core:default"]}}

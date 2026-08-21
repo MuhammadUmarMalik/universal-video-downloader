@@ -4,7 +4,7 @@ use serde::Serialize;
 pub struct FoundationStatus {
     pub app_name: &'static str,
     pub phase: &'static str,
-    pub tauri: bool,
+    pub electron: bool,
     pub message: &'static str,
 }
 
@@ -13,8 +13,8 @@ impl FoundationStatus {
         Self {
             app_name: "Universal Media Downloader",
             phase: "foundation",
-            tauri: true,
-            message: "The Tauri foundation is connected.",
+            electron: true,
+            message: "The Electron desktop bridge is connected.",
         }
     }
 }

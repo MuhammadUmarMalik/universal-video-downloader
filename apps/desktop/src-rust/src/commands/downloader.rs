@@ -8,7 +8,6 @@ use crate::media::MediaProcessingConfiguration;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
-use tauri::{Emitter, State, Window};
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 
 static JOB_SEQUENCE: AtomicU64 = AtomicU64::new(1);
@@ -105,17 +104,15 @@ fn repository_error(error: RepositoryError) -> AppError {
     }
 }
 
-#[tauri::command]
-pub fn get_bandwidth_status(
-    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
+pub fn get_bandwidth_status_core(
+    pool: &DownloadWorkerPool<ApplicationJobExecutor>,
 ) -> Result<BandwidthStatus, AppError> {
     Ok(bandwidth_status(pool.bandwidth_snapshot()))
 }
 
-#[tauri::command]
-pub async fn set_bandwidth_limit(
-    services: State<'_, AppServices>,
-    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
+pub async fn set_bandwidth_limit_core(
+    services: &AppServices,
+    pool: &DownloadWorkerPool<ApplicationJobExecutor>,
     limit_kbps: u32,
 ) -> Result<BandwidthStatus, AppError> {
     services
@@ -130,10 +127,9 @@ pub async fn set_bandwidth_limit(
     Ok(bandwidth_status(pool.bandwidth_snapshot()))
 }
 
-#[tauri::command]
-pub async fn create_download(
-    services: State<'_, AppServices>,
-    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
+pub async fn create_download_core(
+    services: &AppServices,
+    pool: &DownloadWorkerPool<ApplicationJobExecutor>,
     request: CreateDownloadRequest,
 ) -> Result<DownloadJob, AppError> {
     if request.media_item_id.trim().is_empty()
@@ -216,8 +212,8 @@ pub async fn create_download(
         .await
         .map_err(repository_error)?;
 
-    let worker_pool = pool.inner().clone();
-    tauri::async_runtime::spawn(async move {
+    let worker_pool = pool.clone();
+    tokio::spawn(async move {
         if let Err(error) = worker_pool.run_until_idle().await {
             tracing::error!(event = "download_worker_pool_failed", error = %error);
         }
@@ -225,9 +221,8 @@ pub async fn create_download(
     Ok(job)
 }
 
-#[tauri::command]
-pub fn cancel_download(
-    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
+pub fn cancel_download_core(
+    pool: &DownloadWorkerPool<ApplicationJobExecutor>,
     job_id: String,
 ) -> Result<bool, AppError> {
     if job_id.trim().is_empty() {
@@ -236,36 +231,11 @@ pub fn cancel_download(
     Ok(pool.cancel_job(&job_id))
 }
 
-#[tauri::command]
-pub async fn get_download_jobs(
-    services: State<'_, AppServices>,
-) -> Result<Vec<DownloadJob>, AppError> {
+pub async fn get_download_jobs_core(services: &AppServices) -> Result<Vec<DownloadJob>, AppError> {
     services
         .list_download_jobs()
         .await
         .map_err(repository_error)
-}
-
-#[tauri::command]
-pub fn subscribe_download_progress(
-    window: Window,
-    pool: State<'_, DownloadWorkerPool<ApplicationJobExecutor>>,
-) -> Result<bool, AppError> {
-    let mut receiver = pool.subscribe_progress();
-    tauri::async_runtime::spawn(async move {
-        loop {
-            match receiver.recv().await {
-                Ok(event) => {
-                    if window.emit("download-progress", event).is_err() {
-                        break;
-                    }
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
-                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
-            }
-        }
-    });
-    Ok(true)
 }
 
 #[cfg(test)]

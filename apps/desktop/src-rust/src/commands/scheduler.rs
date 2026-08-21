@@ -9,7 +9,6 @@ use crate::scheduler::{
 };
 use serde::Deserialize;
 use std::sync::atomic::{AtomicU64, Ordering};
-use tauri::State;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 
 static SCHEDULE_SEQUENCE: AtomicU64 = AtomicU64::new(1);
@@ -52,15 +51,13 @@ fn default_auto_download_new_items() -> bool {
     true
 }
 
-#[tauri::command]
-pub async fn get_schedules(services: State<'_, AppServices>) -> Result<Vec<Schedule>, AppError> {
+pub async fn get_schedules_core(services: &AppServices) -> Result<Vec<Schedule>, AppError> {
     services.list_schedules().await.map_err(repository_error)
 }
 
-#[tauri::command]
-pub async fn create_schedule(
-    services: State<'_, AppServices>,
-    analyzer: State<'_, AnalyzerService>,
+pub async fn create_schedule_core(
+    services: &AppServices,
+    analyzer: &AnalyzerService,
     request: CreateScheduleRequest,
 ) -> Result<Schedule, AppError> {
     let now = now_utc();
@@ -91,13 +88,12 @@ pub async fn create_schedule(
         created_at: now.clone(),
         updated_at: now,
     };
-    save_validated_schedule(&services, &analyzer, schedule).await
+    save_validated_schedule(services, analyzer, schedule).await
 }
 
-#[tauri::command]
-pub async fn update_schedule(
-    services: State<'_, AppServices>,
-    analyzer: State<'_, AnalyzerService>,
+pub async fn update_schedule_core(
+    services: &AppServices,
+    analyzer: &AnalyzerService,
     request: UpdateScheduleRequest,
 ) -> Result<Schedule, AppError> {
     let current = services
@@ -127,14 +123,10 @@ pub async fn update_schedule(
         created_at: current.created_at,
         updated_at: now_utc(),
     };
-    save_validated_schedule(&services, &analyzer, schedule).await
+    save_validated_schedule(services, analyzer, schedule).await
 }
 
-#[tauri::command]
-pub async fn delete_schedule(
-    services: State<'_, AppServices>,
-    id: String,
-) -> Result<bool, AppError> {
+pub async fn delete_schedule_core(services: &AppServices, id: String) -> Result<bool, AppError> {
     if id.trim().is_empty() {
         return Err(invalid_request("A schedule ID is required."));
     }
@@ -144,8 +136,7 @@ pub async fn delete_schedule(
         .map_err(repository_error)
 }
 
-#[tauri::command]
-pub async fn get_scheduler_enabled(services: State<'_, AppServices>) -> Result<bool, AppError> {
+pub async fn get_scheduler_enabled_core(services: &AppServices) -> Result<bool, AppError> {
     match services
         .settings
         .get_or_default(crate::application::settings_service::SettingKey::SchedulerEnabled)
@@ -164,9 +155,8 @@ pub async fn get_scheduler_enabled(services: State<'_, AppServices>) -> Result<b
     }
 }
 
-#[tauri::command]
-pub async fn set_scheduler_enabled(
-    services: State<'_, AppServices>,
+pub async fn set_scheduler_enabled_core(
+    services: &AppServices,
     enabled: bool,
 ) -> Result<bool, AppError> {
     services
@@ -186,9 +176,8 @@ pub async fn set_scheduler_enabled(
     Ok(enabled)
 }
 
-#[tauri::command]
-pub async fn run_scheduler_now(
-    scheduler: State<'_, SchedulerLoop>,
+pub async fn run_scheduler_now_core(
+    scheduler: &SchedulerLoop,
 ) -> Result<crate::scheduler::SchedulerRunReport, AppError> {
     scheduler
         .run_once(&now_utc())

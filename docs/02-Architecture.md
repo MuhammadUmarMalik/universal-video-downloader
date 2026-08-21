@@ -71,7 +71,7 @@ universal-media-downloader/
 │       │   ├── lib/
 │       │   ├── stores/
 │       │   └── types/
-│       └── src-tauri/
+│       └── src-rust/
 │           ├── src/
 │           │   ├── commands/
 │           │   ├── domain/
@@ -355,7 +355,7 @@ TikTok is registered as the second adapter to validate registry extensibility. I
 
 ## 19. Phase 5 Slice 1 Downloader Domain Boundary
 
-Phase 5 Slice 1 introduces a pure downloader policy boundary under `src-tauri/src/downloader`. `DownloadStateMachine` owns legal `DownloadStatus` transitions and validates persisted job invariants such as non-negative counters, known-total bounds, and completion consistency. It returns a new job value rather than mutating the caller’s job, keeping transition decisions independent of SQLite, network I/O, filesystem work, and Tauri commands.
+Phase 5 Slice 1 introduces a pure downloader policy boundary under `src-rust/src/downloader`. `DownloadStateMachine` owns legal `DownloadStatus` transitions and validates persisted job invariants such as non-negative counters, known-total bounds, and completion consistency. It returns a new job value rather than mutating the caller’s job, keeping transition decisions independent of SQLite, network I/O, filesystem work, and Tauri commands.
 
 `RetryPolicy` classifies only `NETWORK_ERROR` and `RATE_LIMITED` as automatically retryable in this slice. It enforces configured backoff bounds, retry budget, capped exponential delay, and a bounded deterministic jitter input. The policy is pure and does not schedule sleeps or perform network requests; those responsibilities remain for the worker/application slice. No ETag/Last-Modified migration is included because persistent validators belong with the later streaming/resume implementation.
 
@@ -421,7 +421,7 @@ The initial distribution decision is **system-installed FFmpeg for development a
 
 ## 27. Phase 6 Slice 6.2 FFmpeg Process Boundary
 
-Slice 6.2 adds a Rust-owned FFmpeg process boundary under `src-tauri/src/media/process.rs`. `FfmpegExecutable::resolve_system` searches the operating-system PATH, verifies that the candidate is a regular executable file, invokes `-version` without a shell, parses the major version, and accepts only the pinned supported major version. The current development policy accepts FFmpeg major version 6.
+Slice 6.2 adds a Rust-owned FFmpeg process boundary under `src-rust/src/media/process.rs`. `FfmpegExecutable::resolve_system` searches the operating-system PATH, verifies that the candidate is a regular executable file, invokes `-version` without a shell, parses the major version, and accepts only the pinned supported major version. The current development policy accepts FFmpeg major version 6.
 
 `FfmpegProcessRunner` accepts only crate-local `FfmpegArguments` constructed by Rust code. It launches the resolved executable directly with Tokio’s process API, disables stdin, discards stdout, captures stderr through a bounded reader, and uses child kill-on-drop behavior. It polls the existing atomic cancellation signal, terminates cancelled children, enforces a configured timeout, checks the exit status, and returns only bounded developer diagnostics. No Tauri shell capability, frontend process invocation, raw command string, shell fragment, or user-selected executable path is introduced.
 
@@ -502,3 +502,12 @@ The current capability matrix is therefore: Reddit is public-media download capa
 `DirectMediaAdapter` handles only user-supplied HTTPS URLs whose final path component has an approved media-file extension. It performs no page fetch or scrape during analysis; instead, it creates a single persisted media item and progressive format pointing to the supplied URL. The download-plan resolver and streaming engine independently revalidate the URL, host presence, HTTPS scheme, absence of credentials/fragments, and approved media extension before transfer.
 
 Instagram and TikTok adapters remain platform-page detection adapters. They normalize supported public post/reel/video URL shapes but return `PublicMediaUnavailable` from analysis and format resolution. This separation prevents a social-page URL from being treated as a direct file URL and preserves the no-cookie, no-credential, no-browser-session, no-bypass security boundary.
+
+
+## 26. Electron desktop-shell migration amendment
+
+The active desktop shell is now Electron.js rather than Tauri. Electron’s main process owns the application window, restrictive Content Security Policy, Rust child-process lifecycle, and a fixed IPC command allowlist. The renderer runs with context isolation, disabled Node integration, and a sandboxed preload script.
+
+The Rust application core runs headlessly with `--headless`, initializes SQLite, startup recovery, scheduler, worker pool, bandwidth limiter, and media processing, and serves a local JSON-lines protocol over stdin/stdout. The protocol returns typed results or stable `AppError` objects and emits typed `download-progress` notification lines. Electron forwards only approved progress notifications through the preload API.
+
+The historical `src-rust` directory name remains for migration continuity and SQLx migration paths, but the crate no longer depends on Tauri or launches a Tauri window. Electron Builder packages the renderer, main/preload scripts, and release Rust binary.

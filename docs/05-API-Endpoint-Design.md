@@ -583,3 +583,12 @@ Response:
 ```
 
 The command runs the same due-schedule path as the embedded loop and then invokes the existing bounded worker pool if new jobs were queued. Analysis, scheduling, persistence, and queue errors map to stable `UNSUPPORTED_PLATFORM`, `NETWORK_ERROR`, `DATABASE_UNAVAILABLE`, `DATABASE_CORRUPT`, or `UNKNOWN_ERROR` values without returning raw diagnostics.
+
+
+## 21. Electron local IPC transport amendment
+
+The active desktop API is transported through Electron’s isolated preload bridge rather than Tauri commands. The renderer calls `electronAPI.invoke(command, args)`, while the Electron main process validates the command against a fixed allowlist and forwards a JSON request line to the Rust child process. Rust returns `{ id, ok, result }` on success or `{ id, ok: false, error }` with the stable `AppError` shape on failure.
+
+The supported command names remain `get_foundation_status`, `analyze_url`, `create_download`, `get_bandwidth_status`, `set_bandwidth_limit`, `cancel_download`, `get_download_jobs`, `subscribe_download_progress`, the history commands, and the scheduler commands. Rust emits `{ event: "download-progress", payload }` notification lines independently of request/response traffic; Electron forwards the payload only through `onDownloadProgress` in the preload API.
+
+The renderer cannot open arbitrary child processes, access the filesystem, send unrestricted IPC, or invoke commands outside the allowlist. The Rust process receives its application-data directory through the Electron-owned `UMD_APP_DATA_DIR` environment variable and retains ownership of all network, filesystem, database, queue, and FFmpeg operations.

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { analyzeUrl, createDownload } from "@/lib/tauri";
+import { analyzeUrl, createDownload } from "@/lib/desktopBridge";
 import { Button } from "@/components/ui/button";
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024;

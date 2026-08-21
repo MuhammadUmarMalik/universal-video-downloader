@@ -1,6 +1,6 @@
 export interface FoundationStatus {
   appName: string;
   phase: "foundation";
-  tauri: boolean;
+  electron: boolean;
   message: string;
 }

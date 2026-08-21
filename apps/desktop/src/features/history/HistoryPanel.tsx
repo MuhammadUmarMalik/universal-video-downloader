@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { clearHistory, deleteHistoryEntry, getHistory } from "@/lib/tauri";
+import { clearHistory, deleteHistoryEntry, getHistory } from "@/lib/desktopBridge";
 import type { HistoryEntry } from "@umd/shared-types";
 
 function formatBytes(value: number | null): string {
@@ -76,7 +76,7 @@ export function HistoryPanel() {
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {isLoading ? <div className="p-10 text-center text-sm text-muted-foreground">Loading local history…</div> : null}
-        {error ? <div className="flex items-center justify-between gap-4 p-6 text-sm text-red-700"><span>History unavailable. The Tauri bridge may be disconnected.</span><Button onClick={() => void refetch()} size="sm" variant="outline">Retry</Button></div> : null}
+        {error ? <div className="flex items-center justify-between gap-4 p-6 text-sm text-red-700"><span>History unavailable. The Electron bridge may be disconnected.</span><Button onClick={() => void refetch()} size="sm" variant="outline">Retry</Button></div> : null}
         {!isLoading && !error && entries.length === 0 ? <div className="p-10 text-center"><p className="font-medium">No history entries</p><p className="mt-2 text-sm text-muted-foreground">Terminal download results will appear here after the local worker records them.</p></div> : null}
         {entries.map((entry) => (
           <article className="grid gap-4 border-b border-border px-5 py-5 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_160px_220px_auto] lg:items-center" key={entry.id}>

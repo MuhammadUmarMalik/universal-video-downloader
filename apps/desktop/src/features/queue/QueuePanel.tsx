@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { cancelDownload, getDownloadJobs, subscribeDownloadProgress } from "@/lib/tauri";
+import { cancelDownload, getDownloadJobs, subscribeDownloadProgress } from "@/lib/desktopBridge";
 import { BatchDirectImport } from "./BatchDirectImport";
 import { BandwidthPanel } from "./BandwidthPanel";
 import {
@@ -217,7 +217,7 @@ export function QueuePanel() {
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {isLoading ? <div className="p-10 text-center text-sm text-muted-foreground">Loading the local queue…</div> : null}
-        {error ? <div className="flex items-center justify-between gap-4 p-6 text-sm text-red-700"><span>Queue unavailable. The Tauri bridge may be disconnected.</span><Button onClick={refresh} size="sm" variant="outline">Retry</Button></div> : null}
+        {error ? <div className="flex items-center justify-between gap-4 p-6 text-sm text-red-700"><span>Queue unavailable. The Electron bridge may be disconnected.</span><Button onClick={refresh} size="sm" variant="outline">Retry</Button></div> : null}
         {!isLoading && !error && visibleJobs.length === 0 ? <div className="p-10 text-center"><p className="font-medium">No jobs in this view</p><p className="mt-2 text-sm text-muted-foreground">Analyze a public source, choose a format, and add it to the managed queue.</p></div> : null}
         {visibleJobs.map((job) => <QueueRow job={job} key={job.id} />)}
       </div>

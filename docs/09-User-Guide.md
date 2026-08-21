@@ -79,7 +79,7 @@ Choose a destination directory with sufficient capacity and avoid placing the ap
 | FFmpeg processing fails | Confirm that FFmpeg is installed, executable, and compatible with the media. Review the safe status message and retry only after correcting the input or installation. |
 | The scheduler does not run | Confirm that the scheduler is enabled, the application is open, the schedule is due, and the source adapter explicitly supports scheduling. |
 | The queue is empty after a crash | Startup recovery may have marked an unsafe or unrecoverable job as failed. Open History or inspect the queue’s stable error status; never manually edit the SQLite database. |
-| The UI says the bridge is unavailable | Restart the desktop application. The browser preview is not a substitute for the native Tauri shell. |
+| The UI says the bridge is unavailable | Restart the desktop application. The browser preview is not a substitute for the native Electron shell. |
 
 ## Privacy and security
 
@@ -106,6 +106,15 @@ In the Queue workspace, use **Choose .txt file** under **Batch import**. The fil
 
 Each URL is analyzed through the same `direct` adapter and download-plan validation used by a single URL. Only approved direct media extensions are queued. Instagram, TikTok, YouTube, Facebook, Reddit page URLs, and other social-page URLs are not converted into media URLs by batch import. Rejected lines do not stop the remaining valid lines from being queued; the import status reports the number queued and rejected.
 
-## Tauri desktop wrapper
+## Electron desktop wrapper
 
-The application already runs as a Tauri 2 desktop wrapper. Browser-facing React code uses typed IPC commands, while Rust owns URL validation, filesystem writes, bandwidth pacing, queue persistence, recovery, and media processing. The web preview can render the interface, but download controls that require the Tauri bridge are only operational in the packaged desktop application.
+The application runs as an Electron desktop wrapper. The Electron main process owns the native window and launches the Rust core with `--headless`; the isolated preload bridge exposes typed command calls and progress subscriptions to React. Rust owns URL validation, filesystem writes, bandwidth pacing, queue persistence, recovery, scheduling, and media processing. The web preview can render the interface, but download controls that require the Electron bridge are only operational in the packaged desktop application.
+
+
+## Electron desktop runtime
+
+The active desktop application is packaged with Electron.js. The Electron main process creates the native window and launches the local Rust core as a headless child process. The React renderer receives only the restricted preload API; it does not receive Node.js, filesystem, shell, or child-process access.
+
+For development, use `pnpm --filter @umd/desktop dev`. This starts Vite and Electron together. To launch the already-built desktop renderer, use `pnpm --filter @umd/desktop desktop` after building the Rust release binary. Electron Builder packaging is available through `pnpm --filter @umd/desktop package:electron` after the release Rust binary exists at `apps/desktop/src-rust/target/release/universal-media-downloader`.
+
+The Rust child process stores local data under Electron’s `userData` directory through the `UMD_APP_DATA_DIR` environment variable. Closing the Electron window stops the child process cleanly. The web preview remains useful for layout and unit testing, but native download, queue, scheduler, filesystem, and bandwidth operations require the Electron shell.

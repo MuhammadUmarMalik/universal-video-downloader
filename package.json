@@ -12,9 +12,9 @@
     "test": "pnpm --filter @umd/desktop test",
     "test:e2e": "pnpm --filter @umd/desktop test:e2e",
     "test:native:recovery": "bash scripts/native-recovery-smoke.sh",
-    "rust:test": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml",
-    "rust:clippy": "cargo clippy --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets -- -D warnings",
-    "rust:fmt": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check",
+    "rust:test": "cargo test --manifest-path apps/desktop/src-rust/Cargo.toml",
+    "rust:clippy": "cargo clippy --manifest-path apps/desktop/src-rust/Cargo.toml --all-targets -- -D warnings",
+    "rust:fmt": "cargo fmt --manifest-path apps/desktop/src-rust/Cargo.toml -- --check",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm rust:test && pnpm rust:clippy && pnpm rust:fmt"
   }
 }

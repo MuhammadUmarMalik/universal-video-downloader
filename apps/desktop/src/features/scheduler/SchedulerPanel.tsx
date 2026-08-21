@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CreateScheduleRequest, Schedule, ScheduleType, UpdateScheduleRequest } from "@umd/shared-types";
 import { Button } from "@/components/ui/button";
-import { createSchedule, deleteSchedule, getSchedulerEnabled, getSchedules, runSchedulerNow, setSchedulerEnabled, updateSchedule } from "@/lib/tauri";
+import { createSchedule, deleteSchedule, getSchedulerEnabled, getSchedules, runSchedulerNow, setSchedulerEnabled, updateSchedule } from "@/lib/desktopBridge";
 
 function nextRunDefault(): string {
   return new Date(Date.now() + 60 * 60 * 1000).toISOString();
@@ -133,7 +133,7 @@ export function SchedulerPanel() {
       </form>
 
       {message ? <p className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">{message}</p> : null}
-      {schedulesQuery.error ? <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">Schedules unavailable. The Tauri bridge may be disconnected.</div> : null}
+      {schedulesQuery.error ? <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">Schedules unavailable. The Electron bridge may be disconnected.</div> : null}
       {!schedulesQuery.error && schedules.length === 0 ? <div className="rounded-xl border border-dashed border-border p-10 text-center"><p className="font-medium">No schedules configured</p><p className="mt-2 text-sm text-muted-foreground">Create an opt-in monitor above. It will not run while the scheduler setting is disabled.</p></div> : null}
       <div className="space-y-3">
         {schedules.map((schedule) => <article className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between" key={schedule.id}><div><div className="flex items-center gap-2"><span className={`rounded-full border px-2 py-1 text-xs font-medium ${schedule.enabled ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600"}`}>{schedule.enabled ? "Enabled" : "Paused"}</span><span className="text-sm font-medium">{scheduleLabel(schedule)}</span></div><p className="mt-2 text-xs text-muted-foreground">Source {schedule.source_id} · Next run {schedule.next_run_at ?? "not scheduled"}</p><p className="mt-1 text-xs text-muted-foreground">{schedule.configuration_json?.destination_path ?? "No destination"} · {schedule.configuration_json?.filename_template ?? "No template"}</p></div><div className="flex gap-2"><Button onClick={() => toggleSchedule(schedule)} size="sm" variant="outline">{schedule.enabled ? "Pause" : "Resume"}</Button><Button disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate(schedule.id)} size="sm" variant="outline">Delete</Button></div></article>)}

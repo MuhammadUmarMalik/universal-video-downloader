@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { getBandwidthStatus, setBandwidthLimit } from "@/lib/tauri";
+import { getBandwidthStatus, setBandwidthLimit } from "@/lib/desktopBridge";
 import type { BandwidthSnapshot } from "@umd/shared-types";
 import { formatBytes } from "./queueState";
 

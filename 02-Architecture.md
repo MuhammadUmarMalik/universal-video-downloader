@@ -25,10 +25,10 @@ Layers:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                     Tauri Desktop App                       │
+│                   Electron Desktop App                      │
 │                                                             │
 │  ┌─────────────────────┐       ┌─────────────────────────┐  │
-│  │ React + TypeScript  │◄─────►│ Tauri IPC / Commands    │  │
+│  │ React + TypeScript  │◄─────►│ Electron Preload IPC   │  │
 │  └─────────────────────┘       └────────────┬────────────┘  │
 │                                             │               │
 │  ┌──────────────────────────────────────────▼─────────────┐ │
@@ -71,7 +71,7 @@ universal-media-downloader/
 │       │   ├── lib/
 │       │   ├── stores/
 │       │   └── types/
-│       └── src-tauri/
+│       └── src-rust/
 │           ├── src/
 │           │   ├── commands/
 │           │   ├── domain/
@@ -127,7 +127,7 @@ Pure business entities:
 - Schedule
 - DownloadStatus
 
-Domain code must not depend on React, Tauri, SQLite, or HTTP libraries.
+Domain code must not depend on React, Electron, SQLite, or HTTP libraries.
 
 ### Adapter Layer
 
@@ -240,11 +240,11 @@ At startup:
 
 ## 10. Security
 
-Tauri:
+Electron:
 
-- Minimal filesystem permissions.
-- Minimal shell permissions.
-- Explicit IPC commands.
+- Context isolation and disabled renderer Node integration.
+- Sandboxed preload with a narrow API surface.
+- Explicit IPC command allowlist.
 - Strict CSP.
 - Validate all command inputs.
 
@@ -294,7 +294,7 @@ Never log passwords, cookies, access tokens, or sensitive signed URLs.
 ## 13. Architecture Decisions
 
 ### ADR-001
-Tauri for lightweight native desktop delivery.
+Electron for lightweight desktop delivery with a secure preload bridge; Rust runs headlessly as a child process.
 
 ### ADR-002
 Rust for core orchestration and download workers.
