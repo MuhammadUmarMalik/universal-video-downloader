@@ -142,6 +142,22 @@ function createWindow() {
   } else {
     void mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"));
   }
+  mainWindow.webContents.on("did-finish-load", () => {
+    process.stderr.write("[umd-electron] renderer loaded successfully\n");
+  });
+  mainWindow.webContents.on(
+    "did-fail-load",
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      if (isMainFrame) {
+        process.stderr.write(
+          `[umd-electron] renderer failed to load (${errorCode}): ${errorDescription} - ${validatedURL}\n`,
+        );
+      }
+    },
+  );
+  mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    process.stderr.write(`[umd-electron] renderer process exited: ${details.reason}\n`);
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
     rpc.window = null;

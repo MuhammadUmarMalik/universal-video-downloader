@@ -9,6 +9,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Electron loads the packaged renderer from file://; keep assets relative to index.html.
+  base: "./",
   clearScreen: false,
   server: {
     port: 1420,
