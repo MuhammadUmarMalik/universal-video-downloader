@@ -6,6 +6,11 @@ pub fn init_logging() {
 
     let _ = tracing_subscriber::registry()
         .with(filter)
-        .with(tracing_subscriber::fmt::layer().json().flatten_event(true))
+        .with(
+            tracing_subscriber::fmt::layer()
+                .json()
+                .flatten_event(true)
+                .with_writer(std::io::stderr),
+        )
         .try_init();
 }

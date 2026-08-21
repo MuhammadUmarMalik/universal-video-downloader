@@ -32,3 +32,6 @@ __pycache__/
 # Electron Builder output
 release/
 apps/desktop/release/
+
+# Local Rust headless runtime data
+.umd-data/
