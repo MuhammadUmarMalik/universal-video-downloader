@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Startup Recovery Sequence</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; color: #1A1A3A; font-family: Arial, Helvetica, sans-serif; padding-top: 44px; }
+    .top { margin: 0 62px; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 8px solid #1A1A3A; min-height: 106px; }
+    h1 { font-size: 41px; line-height: 1; letter-spacing: -1.8px; font-weight: 900; max-width: 900px; }
+    .label { color: #FF5A00; font: 900 16px/1 "Courier New", monospace; }
+    /* reduced vertical spacing to remove overflow */
+    .pipeline { margin: 30px 62px 0; min-height: 332px; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 8px solid #1A1A3A; border-bottom: 8px solid #1A1A3A; }
+    .step { min-height: 324px; padding: 18px 20px 0; position: relative; }
+    .step + .step { border-left: 8px solid #1A1A3A; }
+    .num { width: 48px; min-height: 48px; background: #FF5A00; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 900 20px/1 "Courier New", monospace; }
+    h2 { margin-top: 22px; font-size: 25px; line-height: 1.02; letter-spacing: -0.7px; }
+    p { margin-top: 16px; color: #2D2D2D; font: 400 14px/1.43 "Courier New", monospace; }
+    .outcome { margin: 24px 62px 0; min-height: 116px; border: 8px solid #1A1A3A; display: grid; grid-template-columns: 310px 1fr; }
+    .outcome-title { background: #1A1A3A; color: #FFFFFF; padding: 25px 22px 0; font-size: 24px; font-weight: 900; line-height: 1.02; }
+    .outcome-copy { padding: 23px 28px 0; font: 400 17px/1.35 "Courier New", monospace; color: #2D2D2D; }
+    .outcome-copy strong { color: #FF5A00; font-weight: 900; }
+    .source { margin: 10px 62px 0; font: 400 13px/1.2 "Courier New", monospace; color: #2D2D2D; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="top">
+      <h1>Startup recovery runs before scheduling or new work.</h1>
+      <div class="label">02 / 10</div>
+    </header>
+    <main class="pipeline">
+      <section class="step"><div class="num">01</div><h2>Open &amp; migrate</h2><p>Initialize SQLite and apply the durable schema before recovery examines job state.</p></section>
+      <section class="step"><div class="num">02</div><h2>Scan jobs</h2><p>Inspect every non-terminal job left by an interrupted process.</p></section>
+      <section class="step"><div class="num">03</div><h2>Validate artifacts</h2><p>Check destination roots, path ownership, symlinks, and regular-file types.</p></section>
+      <section class="step"><div class="num">04</div><h2>Reconcile safely</h2><p>Complete valid final files, requeue safe partials, restart processing, or persist failure.</p></section>
+      <section class="step"><div class="num">05</div><h2>Start scheduler</h2><p>Only after recovery is durable may new schedule work enter the queue.</p></section>
+    </main>
+    <section class="outcome">
+      <div class="outcome-title">SAFE OUTCOME</div>
+      <div class="outcome-copy"><strong>Resume preserves a verified offset.</strong> Unsafe or exhausted cases become explicit terminal failures. No unsafe persisted path is followed or deleted.</div>
+    </section>
+    <div class="source">SOURCE: docs/04-System-Design.md · docs/09-User-Guide.md</div>
+  </div>
+</body>
+</html>

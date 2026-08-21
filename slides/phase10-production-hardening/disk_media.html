@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Disk and Media Defenses Contain Failure</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; color: #1A1A3A; font-family: Arial, Helvetica, sans-serif; padding-top: 40px; }
+    .header { margin: 0 62px; min-height: 104px; border-bottom: 8px solid #1A1A3A; display: flex; align-items: flex-start; justify-content: space-between; }
+    h1 { max-width: 900px; font-size: 43px; line-height: 0.98; letter-spacing: -2px; font-weight: 900; }
+    .index { color: #FF5A00; font: 900 17px/1.15 "Courier New", monospace; text-align: right; }
+    /* reduced top gap to pull content up and avoid overflow */
+    .columns { margin: 18px 62px 0; min-height: 350px; display: grid; grid-template-columns: 1fr 1fr; border: 8px solid #1A1A3A; }
+    .column { min-height: 350px; padding: 28px 34px 0; }
+    .column + .column { border-left: 8px solid #1A1A3A; }
+    .label { display: inline-block; min-height: 28px; background: #FF5A00; color: #FFFFFF; padding: 9px 11px 0; font: 700 13px/1 "Courier New", monospace; letter-spacing: 1px; text-transform: uppercase; }
+    h2 { font-size: 32px; line-height: 1; letter-spacing: -1.1px; margin-top: 22px; }
+    .statement { font: 400 17px/1.35 "Courier New", monospace; color: #2D2D2D; margin-top: 15px; max-width: 480px; }
+    .evidence { margin-top: 22px; border-top: 4px solid #1A1A3A; min-height: 138px; padding-top: 16px; display: grid; grid-template-columns: 28px 1fr; row-gap: 11px; }
+    .square { width: 14px; height: 14px; background: #FF5A00; margin-top: 4px; }
+    .line { color: #2D2D2D; font: 400 14px/1.28 "Courier New", monospace; }
+    .line strong { color: #1A1A3A; font-weight: 900; }
+    .outcome { margin: 26px 62px 0; min-height: 104px; display: grid; grid-template-columns: 310px 1fr; border: 8px solid #1A1A3A; }
+    .outcome-title { background: #FF5A00; color: #FFFFFF; padding: 22px 22px 0; font-size: 23px; line-height: 0.98; font-weight: 900; letter-spacing: -0.5px; }
+    .outcome-copy { padding: 19px 28px 0; color: #2D2D2D; font: 400 16px/1.35 "Courier New", monospace; }
+    .outcome-copy strong { color: #FF5A00; font-weight: 900; }
+    .source { margin: 10px 62px 0; color: #2D2D2D; font: 400 12px/1.2 "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header">
+      <h1>Disk and media defenses contain failure instead of hiding it.</h1>
+      <div class="index">06 / 10<br>CONTAINMENT</div>
+    </header>
+    <main class="columns">
+      <section class="column">
+        <span class="label">Storage boundary</span>
+        <h2>Capacity is checked twice.</h2>
+        <p class="statement">The destination must remain safe before transfer begins and before the next chunk is written.</p>
+        <div class="evidence">
+          <div class="square"></div><div class="line"><strong>Fixed headroom</strong> reserves space beyond the next write.</div>
+          <div class="square"></div><div class="line"><strong>Known and unknown responses</strong> remain bounded.</div>
+          <div class="square"></div><div class="line"><strong>Disk-full and permission failures</strong> are stable, non-retryable outcomes.</div>
+        </div>
+      </section>
+      <section class="column">
+        <span class="label">Media boundary</span>
+        <h2>Processing is size- and type-bound.</h2>
+        <p class="statement">FFmpeg only receives validated, regular, non-symlinked artifacts within explicit processing limits.</p>
+        <div class="evidence">
+          <div class="square"></div><div class="line"><strong>4 GiB ceiling</strong> applies to media inputs and processed outputs.</div>
+          <div class="square"></div><div class="line"><strong>Empty, oversized, and unsafe artifacts</strong> fail closed.</div>
+          <div class="square"></div><div class="line"><strong>Direct arguments, bounded stderr, timeout, cancellation</strong> contain process behavior.</div>
+        </div>
+      </section>
+    </main>
+    <section class="outcome">
+      <div class="outcome-title">FAILURE IS<br>DURABLE</div>
+      <div class="outcome-copy"><strong>Atomic finalization</strong> prevents a partial success from being presented as a completed download. Errors map to safe, user-visible states without exposing shell or raw process diagnostics.</div>
+    </section>
+    <div class="source">SOURCE: docs/06-Tech-Stack.md · docs/07-Security-Audit-Phase10.md</div>
+  </div>
+</body>
+</html>

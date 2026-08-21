@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>All 13 Security-Gate Categories Passed at Source Level</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; color: #1A1A3A; font-family: Arial, Helvetica, sans-serif; padding-top: 42px; }
+    .header { margin: 0 60px; min-height: 92px; border-bottom: 8px solid #1A1A3A; display: flex; align-items: flex-start; justify-content: space-between; }
+    h1 { max-width: 920px; font-size: 39px; line-height: 0.98; letter-spacing: -1.7px; font-weight: 900; }
+    .page { color: #FF5A00; font: 900 16px/1.1 "Courier New", monospace; text-align: right; }
+    /* Reduced vertical spacing to avoid overflow */
+    .content { margin: 12px 60px 0; min-height: 360px; display: grid; grid-template-columns: 306px 1fr; border: 8px solid #1A1A3A; }
+    .visual { background: #1A1A3A; color: #FFFFFF; padding: 12px 22px 0; min-height: 360px; display: flex; flex-direction: column; justify-content: space-between; }
+    .visual img { width: 180px; height: 180px; object-fit: cover; align-self: center; border: 6px solid #FFFFFF; }
+    .visual h2 { font-size: 28px; line-height: 0.95; letter-spacing: -1px; }
+    .visual p { color: #FFFFFF; font: 700 13px/1.35 "Courier New", monospace; text-transform: uppercase; letter-spacing: 0.5px; }
+    .audit { min-height: 360px; display: grid; grid-template-columns: 1fr 1fr; }
+    .cell { padding: 12px 14px 0; min-height: 160px; }
+    .cell:nth-child(2), .cell:nth-child(4) { border-left: 8px solid #1A1A3A; }
+    .cell:nth-child(3), .cell:nth-child(4) { border-top: 8px solid #1A1A3A; }
+    .count { color: #FF5A00; font: 900 28px/1 "Courier New", monospace; }
+    h3 { margin-top: 9px; font-size: 23px; line-height: 1; letter-spacing: -0.7px; }
+    /* Compact item lists: inline to save vertical space */
+    .items { margin-top: 10px; font: 400 14px/1.45 "Courier New", monospace; color: #2D2D2D; }
+    .items span { color: #FF5A00; font-weight: 900; margin-right: 6px; }
+    .bottom { margin: 12px 60px 0; min-height: 100px; display: grid; grid-template-columns: 330px 1fr; border: 8px solid #1A1A3A; }
+    .bottom-title { background: #FF5A00; color: #FFFFFF; padding: 12px 16px 0; font-size: 23px; line-height: 1; font-weight: 900; }
+    .bottom-copy { padding: 12px 18px 0; color: #2D2D2D; font: 400 15px/1.36 "Courier New", monospace; }
+    .bottom-copy strong { color: #FF5A00; }
+    .source { margin: 10px 60px 0; color: #2D2D2D; font: 400 12px/1.2 "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header">
+      <h1>All 13 security-gate categories passed at source level.</h1>
+      <div class="page">04 / 10<br>AUDIT MATRIX</div>
+    </header>
+    <main class="content">
+      <section class="visual">
+        <h2>13 / 13<br>VERIFIED</h2>
+        <img src="/home/ubuntu/upload/search_images/Kd7mpxx1xBSm.jpg" alt="Security shield illustration" />
+        <p>Local-first<br>Fail-closed<br>Rust-owned</p>
+      </section>
+      <section class="audit">
+        <div class="cell"><div class="count">03</div><h3>Input &amp; naming</h3><div class="items"><span>■</span> URL validation, Path traversal, Filename injection</div></div>
+        <div class="cell"><div class="count">03</div><h3>Process &amp; runtime</h3><div class="items"><span>■</span> Command injection, Process arguments, Malicious media</div></div>
+        <div class="cell"><div class="count">04</div><h3>Storage &amp; artifacts</h3><div class="items"><span>■</span> File permissions, Temporary files, Symlink attacks, Disk exhaustion</div></div>
+        <div class="cell"><div class="count">03</div><h3>Data &amp; observability</h3><div class="items"><span>■</span> Token handling, Credential handling, Logging</div></div>
+      </section>
+    </main>
+    <section class="bottom">
+      <div class="bottom-title">NO BYPASS<br>BEHAVIOR FOUND</div>
+      <div class="bottom-copy">No credentials, cookies, private-content access, DRM circumvention, CAPTCHA bypass, anti-bot behavior, rate-limit evasion, shell interpretation, or arbitrary process execution. <strong>Remaining validation:</strong> Windows/macOS ACL and packaging checks; malformed-media corpus and packaged-FFmpeg matrix.</div>
+    </section>
+    <div class="source">SOURCE: docs/07-Security-Audit-Phase10.md</div>
+  </div>
+</body>
+</html>

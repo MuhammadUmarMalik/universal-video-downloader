@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Native Crash Recovery Proof</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; color: #1A1A3A; font-family: Arial, Helvetica, sans-serif; padding-top: 42px; }
+    .header { margin: 0 62px; min-height: 104px; border-bottom: 8px solid #1A1A3A; display: flex; justify-content: space-between; align-items: flex-start; }
+    h1 { max-width: 900px; font-size: 42px; line-height: 0.98; letter-spacing: -1.9px; font-weight: 900; }
+    .index { color: #FF5A00; font: 900 16px/1.2 "Courier New", monospace; text-align: right; }
+    .main { margin: 32px 62px 0; min-height: 430px; display: grid; grid-template-columns: 390px 1fr; border: 8px solid #1A1A3A; }
+    .setup { background: #1A1A3A; color: #FFFFFF; padding: 36px 32px 0; min-height: 430px; }
+    .setup .tag { color: #FF5A00; font: 900 14px/1.2 "Courier New", monospace; letter-spacing: 1px; }
+    .setup h2 { margin-top: 24px; font-size: 34px; line-height: 0.98; letter-spacing: -1.2px; }
+    .setup p { margin-top: 24px; font: 400 16px/1.45 "Courier New", monospace; color: #FFFFFF; }
+    .verdict { margin-top: 40px; color: #FF5A00; font-size: 36px; line-height: 0.95; font-weight: 900; letter-spacing: -1px; }
+    .evidence { min-height: 430px; display: grid; grid-template-rows: 74px repeat(4, 1fr); }
+    .evidence-head { background: #FF5A00; color: #FFFFFF; padding: 23px 28px 0; font: 900 17px/1 "Courier New", monospace; letter-spacing: 1px; }
+    .row { display: grid; grid-template-columns: 1fr 215px; border-top: 8px solid #1A1A3A; min-height: 88px; }
+    .row-label { padding: 23px 28px 0; font: 700 18px/1.2 "Courier New", monospace; color: #2D2D2D; }
+    .row-value { border-left: 8px solid #1A1A3A; padding: 17px 20px 0; color: #FF5A00; font-size: 31px; line-height: 1; font-weight: 900; }
+    .event { font-size: 21px; line-height: 1.05; letter-spacing: -0.6px; }
+    .footer { margin: 22px 62px 0; min-height: 62px; border-left: 8px solid #FF5A00; padding: 8px 0 0 18px; font: 400 14px/1.35 "Courier New", monospace; color: #2D2D2D; }
+    .footer strong { color: #1A1A3A; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header">
+      <h1>The real Linux binary survived a forced crash.</h1>
+      <div class="index">03 / 10<br>NATIVE EVIDENCE</div>
+    </header>
+    <main class="main">
+      <section class="setup">
+        <div class="tag">TEST METHOD</div>
+        <h2>Kill the packaged process. Relaunch against the same SQLite data.</h2>
+        <p>Fixture: a real interrupted <strong>downloading</strong> job plus a real five-byte <strong>.part</strong> file in isolated XDG application data.</p>
+        <div class="verdict">PASS</div>
+      </section>
+      <section class="evidence">
+        <div class="evidence-head">DURABLE POST-RESTART EVIDENCE</div>
+        <div class="row"><div class="row-label">Interrupted job inspected</div><div class="row-value">1</div></div>
+        <div class="row"><div class="row-label">Safe job requeued</div><div class="row-value">1</div></div>
+        <div class="row"><div class="row-label">Verified offset preserved</div><div class="row-value">5 B</div></div>
+        <div class="row"><div class="row-label">Recovery event persisted</div><div class="row-value event">recovery_<br>queued</div></div>
+      </section>
+    </main>
+    <footer class="footer"><strong>Why it matters:</strong> this proof comes from the real Tauri release binary, filesystem, and SQLite database — not a browser IPC mock.</footer>
+  </div>
+</body>
+</html>

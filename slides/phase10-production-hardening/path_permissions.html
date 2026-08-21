@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rust-Owned Paths and Permissions Fail Closed</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; color: #1A1A3A; font-family: Arial, Helvetica, sans-serif; padding-top: 42px; }
+    .header { min-height: 108px; margin: 0 62px; border-bottom: 8px solid #1A1A3A; display: flex; justify-content: space-between; align-items: flex-start; }
+    h1 { max-width: 895px; font-size: 42px; line-height: 0.99; letter-spacing: -1.8px; font-weight: 900; }
+    .index { color: #FF5A00; font: 900 16px/1.1 "Courier New", monospace; text-align: right; }
+    .body { margin: 34px 62px 0; min-height: 388px; display: grid; grid-template-columns: 47% 53%; border: 8px solid #1A1A3A; }
+    .intake { min-height: 388px; padding: 30px 30px 0; border-right: 8px solid #1A1A3A; }
+    .tag { display: inline-block; min-height: 27px; padding: 9px 10px 0; background: #FF5A00; color: #FFFFFF; font: 700 12px/1 "Courier New", monospace; letter-spacing: 1px; text-transform: uppercase; }
+    h2 { margin-top: 25px; max-width: 430px; font-size: 32px; line-height: 1.02; letter-spacing: -1.1px; }
+    .intake p { margin-top: 19px; max-width: 430px; color: #2D2D2D; font: 400 16px/1.43 "Courier New", monospace; }
+    .deny { margin-top: 25px; min-height: 92px; border-top: 8px solid #1A1A3A; padding-top: 14px; color: #2D2D2D; font: 700 14px/1.35 "Courier New", monospace; }
+    .deny strong { color: #FF5A00; }
+    .chain { display: grid; grid-template-rows: repeat(3, 1fr); min-height: 388px; }
+    .chain-row { min-height: 124px; padding: 19px 26px 0; display: grid; grid-template-columns: 66px 1fr; column-gap: 18px; }
+    .chain-row + .chain-row { border-top: 8px solid #1A1A3A; }
+    .marker { width: 58px; min-height: 58px; background: #1A1A3A; color: #FFFFFF; font: 900 18px/58px "Courier New", monospace; text-align: center; }
+    .chain-row:nth-child(2) .marker { background: #FF5A00; }
+    .chain-row h3 { font-size: 23px; line-height: 1.02; letter-spacing: -0.6px; }
+    .chain-row p { margin-top: 9px; color: #2D2D2D; font: 400 13px/1.35 "Courier New", monospace; max-width: 435px; }
+    .assertion { margin: 26px 62px 0; min-height: 70px; display: grid; grid-template-columns: 250px 1fr; border: 8px solid #1A1A3A; }
+    .assertion-label { background: #FF5A00; color: #FFFFFF; padding: 17px 18px 0; font: 900 16px/1.1 "Courier New", monospace; letter-spacing: 1px; }
+    .assertion-copy { padding: 15px 24px 0; color: #1A1A3A; font-size: 20px; line-height: 1.1; font-weight: 900; letter-spacing: -0.4px; }
+    .source { margin: 10px 62px 0; color: #2D2D2D; font: 400 12px/1.2 "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header">
+      <h1>Rust-owned paths and permissions fail closed.</h1>
+      <div class="index">05 / 10<br>BOUNDARY</div>
+    </header>
+    <main class="body">
+      <section class="intake">
+        <span class="tag">Intake gate</span>
+        <h2>Only safe destinations enter the pipeline.</h2>
+        <p>Roots must be absolute, normalized, and free of parent traversal. Candidate paths remain inside the selected root.</p>
+        <div class="deny"><strong>REJECTED:</strong> separators · control characters · reserved names · invalid filesystem characters · temporary suffixes · trailing dots/spaces · <code>.</code> / <code>..</code></div>
+      </section>
+      <section class="chain">
+        <div class="chain-row">
+          <div class="marker">01</div>
+          <div><h3>Private artifacts</h3><p>Application data is 0700; SQLite, partial, processing, finalized, and recovered media artifacts are hardened to 0600 on Unix.</p></div>
+        </div>
+        <div class="chain-row">
+          <div class="marker">02</div>
+          <div><h3>Symlink exclusion</h3><p>Roots, inputs, partials, outputs, and final files use symlink metadata checks before read, write, delete, or rename.</p></div>
+        </div>
+        <div class="chain-row">
+          <div class="marker">03</div>
+          <div><h3>Trusted executable</h3><p>FFmpeg must be a regular executable; group- or world-writable binaries are rejected before process launch.</p></div>
+        </div>
+      </section>
+    </main>
+    <section class="assertion">
+      <div class="assertion-label">OWNERSHIP RULE</div>
+      <div class="assertion-copy">The browser never performs filesystem or process work. It submits typed requests to the Rust boundary.</div>
+    </section>
+    <div class="source">SOURCE: docs/07-Security-Audit-Phase10.md · docs/09-User-Guide.md</div>
+  </div>
+</body>
+</html>

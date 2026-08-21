@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Linux Release Readiness Is Strong and Bounded</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; color: #1A1A3A; font-family: Arial, Helvetica, sans-serif; padding-top: 40px; }
+    .header { margin: 0 62px; min-height: 106px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 8px solid #1A1A3A; }
+    h1 { max-width: 905px; font-size: 43px; line-height: 0.97; letter-spacing: -2px; font-weight: 900; }
+    .index { color: #FF5A00; font: 900 16px/1.1 "Courier New", monospace; text-align: right; }
+    .evidence { margin: 32px 62px 0; min-height: 320px; display: grid; grid-template-columns: 1.06fr 0.94fr 0.94fr; border: 8px solid #1A1A3A; }
+    .zone { min-height: 320px; padding: 26px 26px 0; }
+    .zone + .zone { border-left: 8px solid #1A1A3A; }
+    .verdict { background: #FF5A00; color: #FFFFFF; }
+    .verdict .mini { font: 900 13px/1.1 "Courier New", monospace; letter-spacing: 1.2px; }
+    .verdict h2 { margin-top: 28px; font-size: 45px; line-height: 0.88; letter-spacing: -2px; }
+    .verdict p { margin-top: 27px; font: 700 14px/1.35 "Courier New", monospace; }
+    .mini { color: #FF5A00; font: 900 13px/1.1 "Courier New", monospace; letter-spacing: 1.1px; text-transform: uppercase; }
+    .zone h3 { margin-top: 19px; font-size: 26px; line-height: 1; letter-spacing: -0.9px; }
+    .check { margin-top: 22px; display: grid; grid-template-columns: 23px 1fr; row-gap: 12px; }
+    .mark { width: 14px; height: 14px; background: #FF5A00; margin-top: 3px; }
+    .copy { color: #2D2D2D; font: 400 14px/1.28 "Courier New", monospace; }
+    .next { margin: 26px 62px 0; min-height: 142px; display: grid; grid-template-columns: 300px 1fr; border: 8px solid #1A1A3A; }
+    .next-title { background: #1A1A3A; color: #FFFFFF; padding: 24px 22px 0; font-size: 25px; line-height: 0.98; letter-spacing: -0.8px; font-weight: 900; }
+    .next-copy { padding: 22px 28px 0; color: #2D2D2D; font: 400 15px/1.4 "Courier New", monospace; }
+    .next-copy strong { color: #FF5A00; font-weight: 900; }
+    .source { margin: 10px 62px 0; color: #2D2D2D; font: 400 12px/1.2 "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header">
+      <h1>Linux release readiness is strong — and clearly bounded.</h1>
+      <div class="index">10 / 10<br>VERDICT</div>
+    </header>
+    <main class="evidence">
+      <section class="zone verdict">
+        <div class="mini" style="color:#FFFFFF;">Verified target</div>
+        <h2>LINUX<br>READY</h2>
+        <p>Local-first release evidence is complete for the packaged Debian artifact.</p>
+      </section>
+      <section class="zone">
+        <div class="mini">Recovery &amp; security</div>
+        <h3>Durable control paths.</h3>
+        <div class="check">
+          <div class="mark"></div><div class="copy">Source-level 13-category security gate passed.</div>
+          <div class="mark"></div><div class="copy">Native Linux forced-crash recovery requeued a real partial job.</div>
+          <div class="mark"></div><div class="copy">No credentials, private access, bypass behavior, shell interpretation, or arbitrary execution.</div>
+        </div>
+      </section>
+      <section class="zone">
+        <div class="mini">Release evidence</div>
+        <h3>Artifact and quality gates.</h3>
+        <div class="check">
+          <div class="mark"></div><div class="copy">Debian package built; checksum recorded.</div>
+          <div class="mark"></div><div class="copy">125 Rust tests, 9 frontend tests, and 7 browser tests passed.</div>
+          <div class="mark"></div><div class="copy">Large scheduler and four-GiB metadata checks remained bounded.</div>
+        </div>
+      </section>
+    </main>
+    <section class="next">
+      <div class="next-title">REMAINING<br>RELEASE ENGINEERING</div>
+      <div class="next-copy"><strong>Platform-native work, not hidden security debt:</strong> Windows and macOS packages, signing/notarization, platform permission checks, packaged native E2E, auto-update, diagnostics panel, and a malformed-media fuzz corpus.</div>
+    </section>
+    <div class="source">SOURCE: docs/07-Security-Audit-Phase10.md · docs/08-Release-Documentation.md · docs/09-User-Guide.md</div>
+  </div>
+</body>
+</html>

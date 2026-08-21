@@ -1,0 +1,113 @@
+{
+  "project_info": {
+    "title": "Phase 10 Production Hardening",
+    "created": 1787282757.957,
+    "last_updated": 1787282923.504,
+    "total_slides": 10
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "hardening_scope",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "recovery_sequence",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "native_crash_proof",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "security_gate",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "path_permissions",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "disk_media",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "scheduler",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "release_artifacts",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "readiness",
+      "state": "edited",
+      "pageNum": 10
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "Phase 10 Production Hardening",
+      "summary": "Cover slide introducing native recovery, security-gate review, and release readiness for Universal Media Downloader 0.1.0."
+    },
+    {
+      "id": "hardening_scope",
+      "title": "Hardening Turned a Working Downloader into a Recoverable Product",
+      "summary": "Summarize the Phase 10 focus, Rust-owned safety boundaries, and Linux-release outcome."
+    },
+    {
+      "id": "recovery_sequence",
+      "title": "Startup Recovery Runs Before Scheduling or New Work",
+      "summary": "Show the safe recovery sequence from database migration through validation, reconciliation, requeueing, and scheduler start."
+    },
+    {
+      "id": "native_crash_proof",
+      "title": "The Real Linux Binary Survived a Forced Crash",
+      "summary": "Present real packaged-process recovery evidence, including one inspected job, one requeue, a five-byte preserved offset, and durable recovery event."
+    },
+    {
+      "id": "security_gate",
+      "title": "All 13 Security-Gate Categories Passed at Source Level",
+      "summary": "Group the 13 audited categories into input, process, storage, and data/observability boundaries, plus explicit platform limitations.",
+      "image_plan": "/home/ubuntu/upload/search_images/Kd7mpxx1xBSm.jpg - Security-gate categories and boundary validation fit well with a security shield illustration"
+    },
+    {
+      "id": "path_permissions",
+      "title": "Rust-Owned Paths and Permissions Fail Closed",
+      "summary": "Explain path, filename, artifact, symlink, and FFmpeg executable protection controls."
+    },
+    {
+      "id": "disk_media",
+      "title": "Disk and Media Defenses Contain Failure",
+      "summary": "Describe capacity headroom, bounded responses, stable errors, size ceilings, and safe FFmpeg execution."
+    },
+    {
+      "id": "scheduler",
+      "title": "Scheduling Stays Opt-In, App-Open, and Bounded",
+      "summary": "Summarize schedule types, adapter capability gates, duplicate suppression, and 100,000-candidate plus 4-GiB metadata performance evidence."
+    },
+    {
+      "id": "release_artifacts",
+      "title": "Linux Is Packaged; Other Platforms Need Native Runners",
+      "summary": "Present verified Linux Debian artifact, checksum, and Windows/macOS packaging prerequisites."
+    },
+    {
+      "id": "readiness",
+      "title": "Linux Release Readiness Is Strong and Bounded",
+      "summary": "Conclude with verified outcomes, user-safe workflow, and explicitly scoped remaining platform release engineering work."
+    }
+  ]
+}

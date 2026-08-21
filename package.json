@@ -1,0 +1,20 @@
+{
+  "name": "universal-media-downloader",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first Universal Media Downloader desktop application",
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev": "pnpm --filter @umd/desktop dev",
+    "build": "pnpm --filter @umd/desktop build",
+    "lint": "pnpm --filter @umd/desktop lint",
+    "typecheck": "pnpm --filter @umd/desktop typecheck",
+    "test": "pnpm --filter @umd/desktop test",
+    "test:e2e": "pnpm --filter @umd/desktop test:e2e",
+    "test:native:recovery": "bash scripts/native-recovery-smoke.sh",
+    "rust:test": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml",
+    "rust:clippy": "cargo clippy --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets -- -D warnings",
+    "rust:fmt": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm rust:test && pnpm rust:clippy && pnpm rust:fmt"
+  }
+}
