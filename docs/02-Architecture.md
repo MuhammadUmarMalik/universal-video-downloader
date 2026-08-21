@@ -486,3 +486,12 @@ A downloading or resolving job with a validated `.part` file is requeued with th
 The focused security hardening pass also applies least-privilege Unix modes: application-data directories are `0700`, the SQLite database is `0600`, and downloaded, partial, finalized, recovered, and FFmpeg processing artifacts are hardened to `0600`. System FFmpeg resolution rejects missing, non-regular, non-executable, group-writable, and world-writable binaries on Unix. These checks are no-ops where the platform does not expose Unix mode bits; platform packaging and ACL review remain separate release-hardening work.
 
 Streaming now performs a free-space preflight and a per-chunk capacity check with a fixed safety headroom, bounds known and unknown responses, and maps permission and disk-full failures to stable non-retryable application codes. Typed media processing bounds input and output artifacts at four GiB, rejects symlink/non-regular media, keeps FFmpeg direct-argument execution, and retains bounded stderr, timeout, cancellation, and malformed-output validation.
+
+
+## 29. Detection-only YouTube and Facebook adapters
+
+The adapter registry now includes `YouTubeAdapter` and `FacebookAdapter` alongside the existing Reddit and TikTok adapters. These adapters strictly recognize HTTPS public video URL shapes and normalize them to canonical platform URLs for detection and diagnostics.
+
+They intentionally do not perform page scraping, browser-session reuse, credential handling, cookie handling, undocumented media extraction, or access-control workarounds. Their `analyze` and `resolve_formats` methods return `PublicMediaUnavailable`, which maps to a user-facing `MEDIA_UNAVAILABLE` response explaining that the platform was detected but no official public media download path is available. This keeps platform selection and URL detection extensible without falsely claiming download support.
+
+The current capability matrix is therefore: Reddit is public-media download capable within its narrow approved-host boundary; TikTok, YouTube, and Facebook are detection-only; and the generic downloader remains restricted to validated direct public media resources accepted by the existing download-plan policy.

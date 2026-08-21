@@ -99,7 +99,7 @@ export function AnalysisResults({ response }: AnalysisResultsProps) {
                     ) : (
                       <tr>
                         <td className="px-4 py-4 text-muted-foreground" colSpan={5}>
-                          No downloadable format was exposed by this adapter.
+                          This platform was detected, but no official public downloadable format is available. The app will not use credentials, cookies, or access-control workarounds.
                         </td>
                       </tr>
                     )}

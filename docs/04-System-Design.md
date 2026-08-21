@@ -693,3 +693,10 @@ Recovery uses optimistic status predicates in SQLite transactions. Requeue and u
 Before an HTTP body is requested, streaming checks available space in the destination filesystem and requires a fixed free-space headroom in addition to the expected remaining bytes. The same check runs before each chunk is written, which protects against concurrent disk consumption and unknown-length responses. File creation, writes, flushes, syncs, and resume opens classify permission denial and common disk-full conditions separately from generic write failures. Partial files remain available for safe retry or startup recovery when the failure is not a security violation.
 
 Media processing rejects symlink and non-regular inputs, rejects input files above the supported four-GiB bound, and rejects empty, symlinked, non-regular, or oversized FFmpeg outputs before atomic rename. FFmpeg continues to receive direct typed arguments, null standard input, bounded stderr, cancellation polling, and a hard timeout. Malformed media therefore fails as a bounded processing error rather than becoming an unbounded resource-consumption path.
+
+
+## Detection-only social-platform behavior
+
+The analyzer supports strict URL detection for public YouTube and Facebook video URL shapes. When either adapter is selected, the backend normalizes the URL and then returns a typed `MEDIA_UNAVAILABLE` result because the current project has no approved official public media-byte contract for those platforms.
+
+The frontend lists YouTube and Facebook as detection-only options and explains that the application will not use credentials, cookies, browser sessions, undocumented extraction, DRM circumvention, private-content or authentication bypass, CAPTCHA or anti-bot workarounds, or rate-limit evasion. A detected social-page URL therefore cannot be added to the download queue unless a future adapter exposes a validated public media format through an approved contract.

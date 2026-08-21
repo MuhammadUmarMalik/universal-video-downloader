@@ -1,4 +1,6 @@
-use super::{AdapterError, PlatformAdapter, RedditAdapter, TikTokAdapter};
+use super::{
+    AdapterError, FacebookAdapter, PlatformAdapter, RedditAdapter, TikTokAdapter, YouTubeAdapter,
+};
 use std::sync::Arc;
 use thiserror::Error;
 use url::Url;
@@ -25,6 +27,8 @@ impl AdapterRegistry {
         Ok(Self::new(vec![
             Arc::new(RedditAdapter::new()?),
             Arc::new(TikTokAdapter::new()),
+            Arc::new(YouTubeAdapter::new()),
+            Arc::new(FacebookAdapter::new()),
         ]))
     }
 
@@ -73,9 +77,19 @@ mod tests {
         let registry = AdapterRegistry::with_defaults().unwrap();
         let url = Url::parse("https://www.reddit.com/r/videos/comments/abc123/title").unwrap();
         assert_eq!(registry.select(&url, None).unwrap().id(), "reddit");
-        assert_eq!(registry.list(), vec!["reddit", "tiktok"]);
+        assert_eq!(
+            registry.list(),
+            vec!["reddit", "tiktok", "youtube", "facebook"]
+        );
         let tiktok_url = Url::parse("https://www.tiktok.com/@creator/video/1234567890").unwrap();
         assert_eq!(registry.select(&tiktok_url, None).unwrap().id(), "tiktok");
+        let youtube_url = Url::parse("https://youtu.be/dQw4w9WgXcQ").unwrap();
+        assert_eq!(registry.select(&youtube_url, None).unwrap().id(), "youtube");
+        let facebook_url = Url::parse("https://www.facebook.com/reel/1234567890").unwrap();
+        assert_eq!(
+            registry.select(&facebook_url, None).unwrap().id(),
+            "facebook"
+        );
     }
 
     #[test]

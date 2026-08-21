@@ -57,7 +57,7 @@ export function AnalyzerPanel() {
             Inspect an authorized public media URL
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Start with a public Reddit post or TikTok URL. The analyzer will only return media that its adapter can resolve without credentials or access-control workarounds.
+            Use a public URL from a registered platform. Reddit currently supports public media downloads; YouTube and Facebook are detection-only until an official public media-byte path is available. No credentials, cookies, or access-control workarounds are used.
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export function AnalyzerPanel() {
               required
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://www.reddit.com/r/videos/comments/..."
+              placeholder="https://www.reddit.com/r/videos/comments/... or a supported social URL"
               className="h-10 rounded-md border border-input bg-background px-3 font-normal outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
             />
           </label>
@@ -87,7 +87,9 @@ export function AnalyzerPanel() {
             >
               <option value="">Auto-detect</option>
               <option value="reddit">Reddit</option>
-              <option value="tiktok">TikTok</option>
+              <option value="tiktok">TikTok (detection only)</option>
+              <option value="youtube">YouTube (detection only)</option>
+              <option value="facebook">Facebook (detection only)</option>
             </select>
           </label>
 

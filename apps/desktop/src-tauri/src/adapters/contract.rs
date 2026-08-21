@@ -58,11 +58,11 @@ pub enum AdapterError {
     PlatformMismatch,
     #[error("the Reddit response was malformed")]
     MalformedResponse { details: &'static str },
-    #[error("the Reddit resource is unavailable")]
+    #[error("the public media resource is unavailable")]
     ResourceUnavailable { retryable: bool },
-    #[error("the Reddit media resource is not explicitly public and downloadable")]
+    #[error("no official public media download resource is available")]
     PublicMediaUnavailable,
-    #[error("the Reddit request failed")]
+    #[error("the platform request failed")]
     Network { retryable: bool },
     #[error("this platform requires an authorized API integration")]
     AuthenticationRequired,

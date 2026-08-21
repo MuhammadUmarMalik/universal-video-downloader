@@ -420,3 +420,10 @@ MVP is ready when:
 - History is searchable.
 - Unsupported/restricted sources fail safely.
 - No authentication, DRM, or security control is bypassed.
+
+
+## Current public-platform support policy
+
+The initial release exposes independent platform detection for Reddit, TikTok, YouTube, and Facebook. Reddit is the only currently download-capable social-platform adapter because its implementation can restrict itself to explicitly exposed public media resources. TikTok, YouTube, and Facebook are detection-only adapters in the current release: they recognize supported public video URL shapes but do not expose downloadable formats.
+
+A detection-only result is intentional and fail-closed. The application must not use credentials, cookies, browser sessions, undocumented extraction paths, DRM circumvention, authentication or private-content bypass, CAPTCHA or anti-bot workarounds, or rate-limit evasion to turn a detected social-page URL into media bytes. These platforms may become download-capable only after an official, reviewed, public media-byte contract is available and approved under the project security gate.

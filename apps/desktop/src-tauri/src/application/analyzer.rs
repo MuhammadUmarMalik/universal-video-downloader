@@ -210,7 +210,10 @@ impl AnalyzerError {
                         message: "This URL is not supported by an available platform adapter."
                             .to_owned(),
                         retryable: false,
-                        user_action: Some("Use a supported public Reddit post URL.".to_owned()),
+                        user_action: Some(
+                            "Use a supported public URL or choose a registered platform."
+                                .to_owned(),
+                        ),
                         diagnostic: None,
                     }
                 }
@@ -226,7 +229,7 @@ fn adapter_error(error: AdapterError) -> AppError {
     match error {
         AdapterError::UnsupportedUrl | AdapterError::InvalidUrl => AppError {
             code: ErrorCode::InvalidUrl,
-            message: "Enter a supported public Reddit post URL.".to_owned(),
+            message: "Enter a supported public media URL.".to_owned(),
             retryable: false,
             user_action: Some("Check the URL and try again.".to_owned()),
             diagnostic: None,
@@ -235,7 +238,7 @@ fn adapter_error(error: AdapterError) -> AppError {
             code: ErrorCode::UnsupportedPlatform,
             message: "The selected platform does not match this URL.".to_owned(),
             retryable: false,
-            user_action: Some("Choose Reddit or use automatic detection.".to_owned()),
+            user_action: Some("Choose the matching platform or use automatic detection.".to_owned()),
             diagnostic: None,
         },
         AdapterError::AuthenticationRequired => AppError {
@@ -243,21 +246,31 @@ fn adapter_error(error: AdapterError) -> AppError {
             message: "This platform requires an authorized API integration.".to_owned(),
             retryable: false,
             user_action: Some(
-                "Use a supported public Reddit URL or configure an approved integration."
+                "Use a supported public URL or configure an approved integration."
                     .to_owned(),
             ),
             diagnostic: None,
         },
-        AdapterError::MalformedResponse { .. } | AdapterError::PublicMediaUnavailable => AppError {
+        AdapterError::PublicMediaUnavailable => AppError {
             code: ErrorCode::MediaUnavailable,
-            message: "The public media could not be resolved from this Reddit post.".to_owned(),
+            message: "This platform was detected, but no official public media download is available.".to_owned(),
             retryable: false,
-            user_action: Some("Try another public post or try again later.".to_owned()),
+            user_action: Some(
+                "Use a direct public media URL or choose a platform with an available download path."
+                    .to_owned(),
+            ),
+            diagnostic: None,
+        },
+        AdapterError::MalformedResponse { .. } => AppError {
+            code: ErrorCode::MediaUnavailable,
+            message: "The public media response could not be understood.".to_owned(),
+            retryable: false,
+            user_action: Some("Try another public URL or try again later.".to_owned()),
             diagnostic: None,
         },
         AdapterError::ResourceUnavailable { .. } | AdapterError::Network { .. } => AppError {
             code: ErrorCode::NetworkError,
-            message: "Reddit could not be reached right now.".to_owned(),
+            message: "The platform could not be reached right now.".to_owned(),
             retryable,
             user_action: Some("Check your connection and try again.".to_owned()),
             diagnostic: None,
